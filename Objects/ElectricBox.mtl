@@ -1,0 +1,14 @@
+# Blender 3.6.5 MTL File: 'None'
+# www.blender.org
+
+newmtl BRALUNIT_ELECTRIC_BOX
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/olude/Downloads/weathered-electric-box-game-ready-4k/source/TEX/BRALUNIT_ELECTRIC_BOX_Base_Color.png
+map_Ns C:/Users/olude/Downloads/weathered-electric-box-game-ready-4k/source/TEX/BRALUNIT_ELECTRIC_BOX_Roughness.png
+map_refl C:/Users/olude/Downloads/weathered-electric-box-game-ready-4k/source/TEX/BRALUNIT_ELECTRIC_BOX_Metallic.png
+map_Bump -bm 1.000000 C:/Users/olude/Downloads/weathered-electric-box-game-ready-4k/source/TEX/BRALUNIT_ELECTRIC_BOX_Normal_OpenGL.png
