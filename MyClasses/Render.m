@@ -740,15 +740,23 @@ classdef Render
 %                      fprintf('It actually works!!!!!!\n');
 %                  end
 %                 
-                if ipClient.client ~= -1 && onScreen
+                if ipClient.client ~= -1
                     
-                    % Gap for gaze point file 
-                    dpGap = ',,,,,,,,,,,,,,,,';
-                
-                    strCheck = strcat(dpGap, 'X min,', num2str(xMin), ', X max,', num2str(xMax),...
-                        ', Y min,', num2str(yMin), ', Y max,', num2str(yMax));
-                    ipClient.Log(strCheck);
+                    if onScreen
+                        
+                        % Gap for gaze point file 
+                        dpGap = ',,,,,,,,,,,,,,,,';
 
+                        strCheck = strcat(dpGap, 'X min,', num2str(xMin), ', X max,', num2str(xMax),...
+                            ', Y min,', num2str(yMin), ', Y max,', num2str(yMax));
+                        ipClient.Log(strCheck);
+
+                    else
+
+                        % Used to balance delimiters
+                         ipClient.Blank;
+
+                    end
                 end
 
             end
@@ -778,12 +786,22 @@ classdef Render
                      [onScreen, minMax] = IsBoundingBoxVisible(obj, boundingBoxOne, maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, minReq); 
 
                      % Send to gazepoint if running eyetracker
-                      if ipClient.client ~= -1 && onScreen
+                      if ipClient.client ~= -1 
+                          
+                          if onScreen
+                          
+                              dpEndGap = ',,,,,,,,,,,,,,,,';
 
-                          strCheck = strcat('', 'X min,', num2str(minMax(1)), ', X max,', num2str(minMax(2)),...
-                              ', Y min,', num2str(minMax(3)), ', Y max,', num2str(minMax(4)));
-                          ipClient.Log(strCheck);
+                              strCheck = strcat('', 'X min,', num2str(minMax(1)), ', X max,', num2str(minMax(2)),...
+                                  ', Y min,', num2str(minMax(3)), ', Y max,', num2str(minMax(4)), dpEndGap);
+                              ipClient.Log(strCheck);
 
+                          else
+
+                              ipClient.Blank;
+
+                          end
+                          
                       end
 
                       % Draw bounding box
@@ -813,12 +831,23 @@ classdef Render
                      [onScreenTwo, minMaxTwo] = IsBoundingBoxVisible(obj, boundingBoxTwo, maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, minReq); 
 
                      % Send to gazepoint if running eyetracker
-                      if ipClient.client ~= -1 && onScreenTwo
+                      if ipClient.client ~= -1 
+                          
+                          if onScreenTwo
 
-                          strCheck = strcat(',,,,,,,,', 'X min,', num2str(minMaxTwo(1)), ', X max,', num2str(minMaxTwo(2)),...
-                              ', Y min,', num2str(minMaxTwo(3)), ', Y max,', num2str(minMaxTwo(4)));
-                          ipClient.Log(strCheck);
+                              dpEndGap = ',,,,,,,,,';
 
+                              strCheck = strcat(',,,,,,,,', 'X min,', num2str(minMaxTwo(1)), ', X max,', num2str(minMaxTwo(2)),...
+                                  ', Y min,', num2str(minMaxTwo(3)), ', Y max,', num2str(minMaxTwo(4)), dpEndGap);
+                              ipClient.Log(strCheck);
+
+                          else
+
+                              % Used to balance delimiters
+                              ipClient.Blank;
+
+                          end
+                          
                       end
                       
                       % Draw bounding box

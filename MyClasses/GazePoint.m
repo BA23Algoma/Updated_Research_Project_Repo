@@ -69,6 +69,16 @@ classdef GazePoint
         
         end
         
+         % Used to balance delimiters
+         function obj = Blank(obj)
+             
+             emptySpace = ',,,,,,,,,,,,,,,,,,,,,,,';
+             
+             obj.Log(emptySpace);
+         
+         end
+        
+        
         function obj = Log(obj, command)
             
             line_com = strcat('<SET ID="USER_DATA" VALUE="', command,'" DUR="1"/>\r\n');
