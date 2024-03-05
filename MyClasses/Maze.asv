@@ -202,8 +202,8 @@ classdef Maze
                     
                 end
                 
-                for i = 1:numel(obj.distalCue.x)
-
+                for i = 1:numel(obj.distalCue.7)
+                    
                     radius = 0.15;
                     t = 0:pi/50:2*pi;
                     
@@ -211,16 +211,12 @@ classdef Maze
                       xDistal = radius*cos(t) - obj.distalCue.x(i);
                       yDistal = radius*sin(t) + obj.distalCue.y(i);
                      patch(xDistal, yDistal, 'red');
-
-                end
-                
-                for i= 1:numel(obj.perCue.x)
-                    
+                     
                     % Draw proximal cue
                     xPrxCue = radius*cos(t) - obj.perCue.x(i);
                     yPrxCue = radius*sin(t) + obj.perCue.y(i);
                     patch(xPrxCue, yPrxCue, 'blue');
-                    
+
                 end
 
                 

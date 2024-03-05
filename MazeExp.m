@@ -134,7 +134,7 @@
         
         cali1Str = 'We are going to calibrate eye tracker before starting experiment.';
         cali2Str = 'Ensure you are in an upright position.';
-        cali3Str = 'Hit SPACE BAR to begin calibration.';
+        cali3Str = 'Hit ENTER to begin calibration.';
         standby.ShowStandby(render, inputDevice, cali1Str, cali2Str, cali3Str);
         
         %Close render window
@@ -223,7 +223,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
 
-            standby.ShowStandby(render, inputDevice, 'Get Ready for Practice Tour', 'Hit SPACE BAR when ready.');
+            standby.ShowStandby(render, inputDevice, 'Get Ready for Practice Tour', 'Hit ENTER when ready.');
             
             % Maze tour
             mazeTour = MazeTour(maze.FilePrefix, p.tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
@@ -259,7 +259,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
 
-            standby.ShowStandby(render, inputDevice, 'Get Ready For Maze Tour', 'Hit SPACE BAR when ready.');
+            standby.ShowStandby(render, inputDevice, 'Get Ready For Maze Tour', 'Hit ENTER when ready.');
             
             maze.Tour(mazeTour, render, player, inputDevice);
             
@@ -271,7 +271,7 @@
            
         message1Str = 'You may take a short break.';
         message2Str = 'Please stay seated and do not disturb others.';
-        message3Str = 'Hit SPACE BAR to begin next phase.';
+        message3Str = 'Hit ENTER to begin next phase.';
         standby.ShowStandby(render, inputDevice, message1Str, message2Str, message3Str);
         
     end
@@ -295,16 +295,18 @@
             % Load Peripheral cues 
             % render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
  
-            standby.ShowStandby(render, inputDevice, 'Get Ready for Practice Block', 'Hit SPACE BAR when ready.');
+            standby.ShowStandby(render, inputDevice, 'Get Ready for Practice Block', 'Hit ENTER when ready.');
+            
+            count = 3;
             
             % Maze Practice Maze Run
             if p.pracRun
 
-                for i = 1:5
+                for i = 1:count
 
-                    countdown = 6 - i;
+                    countdown = (count + 1) - i;
 
-                    standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'The Practice Maze will begin in:', countdown, ' ', 1, 0);
+                    standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', countdown, 'Next is the performance phase.', 1, 0);
 
                 end
 
@@ -315,11 +317,11 @@
 
             
             % Maze run  
-            for j = 1:5
+            for j = 1:count
 
-                countdown = 6 - j;
+                countdown = (count + 1) - j;
 
-                standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'The Test Maze will begin in:', countdown, ' ', 1, 0);
+                standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', countdown, 'End of current block.', 1, 0);
 
             end
             
@@ -345,7 +347,7 @@
         for blockIndex = 1:expSchedule.nBlocks
 
             message1Str = sprintf('Block %i', blockIndex);
-            standby.ShowStandby(render, inputDevice, message1Str, 'Hit SPACE BAR when ready.');
+            standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
 
             %    -----------------------
             % JOL
@@ -365,7 +367,7 @@
                     % Maze tour
                     if expSchedule.nMazesPerBlock ~= 1
 
-                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Get Ready For Maze Tour:', labelIndex, 'Hit SPACE BAR when ready.', 0, 0);
+                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Get Ready For Maze Tour:', labelIndex, 'Hit ENTER when ready.', 0, 0);
 
                     end
 
@@ -402,7 +404,7 @@
                     if mazeNum == (expSchedule.nMazes / 2) &&  ipClient.client ~= -1
                         
                         cali1Str = 'We are going to re-calibrate eye tracker.';
-                        cali2Str = 'Hit SPACE BAR when ready to begin calibration.';
+                        cali2Str = 'Hit ENTER when ready to begin calibration.';
                         standby.ShowStandby(render, inputDevice, cali1Str, cali2Str);
                         
                         %Close render window
@@ -428,12 +430,14 @@
                             standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Get Ready To Run In Maze:', mazeNum, ' ', 2, 1);
 
                     % end
+                    
+                    count = 3;
 
                     if p.pracRun
 
                         % Practice Maze run      
                         %message1Str = sprintf('Get Ready To Run Practice Maze');
-                        %standby.ShowStandby(render, inputDevice, message1Str, 'Hit SPACE BAR when ready.');
+                        %standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
 
                         % Send practice note information to Gazepoint
                         if  ipClient.client ~= -1
@@ -443,11 +447,11 @@
                             
                         end
         
-                        for i = 1:5
+                        for i = 1:count
 
-                            countdown = 6 - i;
+                            countdown = (count + 1) - i;
 
-                            standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'The Practice Maze will begin in:', countdown, ' ', 1, 0);
+                            standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', countdown, 'Next is the performance phase.', 1, 0);
 
                         end
 
@@ -466,13 +470,13 @@
                     end
 
                     % message1Str = sprintf('Get Ready To Run Test Maze');
-                    % standby.ShowStandby(render, inputDevice, message1Str, 'Hit SPACE BAR when ready.');
+                    % standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
 
-                    for j = 1:5
+                    for j = 1:count
 
-                        countdown = 6 - j;
+                        countdown = (count + 1) - j;
 
-                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'The Test Maze will begin in:', countdown, ' ', 1, 0);
+                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', countdown, 'End of current block.', 1, 0);
 
                     end
                     
@@ -512,7 +516,7 @@
 
                 message1Str = 'You may take a short break.';
                 message2Str = 'Please stay seated and do not disturb others.';
-                message3Str = 'Hit SPACE BAR to begin next block.';
+                message3Str = 'Hit ENTER to begin next block.';
                 standby.ShowStandby(render, inputDevice, message1Str, message2Str, message3Str);
 
             end

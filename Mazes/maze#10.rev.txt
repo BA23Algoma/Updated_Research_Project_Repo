@@ -25,7 +25,7 @@ chest wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spot
 5.0     0.0     5.0     1.0
 5.0     1.0     6.0     1.0
 #Distal Queue
-5.0	5.0	-5.0	-5.0
+-10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -0.15	1.85	0.1	90.0 Chest.obj Chest.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)

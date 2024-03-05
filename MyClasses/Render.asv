@@ -396,7 +396,7 @@ classdef Render
             %Create global attributes
             obj.DistalCueName = textureName;
             obj.DistalCueTarget = targetFront;
-            obj.distalCueLocation = round(3 * rand() + 1); % Randomly selects between 1 - 4 distal locations
+            obj.distalCueLocation = round((numel( * rand() + 1); % Randomly selects between the two text file input locations
             
 
             % Bind our texture and setup filtering to allow nice presentation of our

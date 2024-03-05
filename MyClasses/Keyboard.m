@@ -7,7 +7,8 @@ classdef Keyboard < InputDevice
         upArrowCode;
         downArrowCode;
         escapeCode;
-        spaceCode;
+        spaceCode; % Previously used sapce bar
+        enterCode;
         
     end
     
@@ -37,6 +38,7 @@ classdef Keyboard < InputDevice
                 obj.downArrowCode   = 40;
                 obj.escapeCode      = 27;
                 obj.spaceCode       = 32;
+                obj.enterCode       = 13;
                 
             elseif ismac
                 obj.leftArrowCode   = KbName('leftArrow');
@@ -59,7 +61,7 @@ classdef Keyboard < InputDevice
             
             if keyIsDown
                                     
-                if keyCode(obj.spaceCode)
+                if keyCode(obj.enterCode)
                     
                     goFlag = 1;
                     
@@ -98,7 +100,7 @@ classdef Keyboard < InputDevice
                     
                     xPosDelta = 1;
                     
-                elseif keyCode(obj.spaceCode)
+                elseif keyCode(obj.enterCode)
                     
                     decisionFlag = 1;
                     

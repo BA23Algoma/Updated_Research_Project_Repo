@@ -36,7 +36,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 5.0     1.0     6.0     1.0 
 5.0     0.0     5.0     1.0
 #Distal Queue
-5.0	5.0	-5.0	-5.0
+-10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, OBJ File, Texture)
 -2.85	3.85	0.1	0.0 Traffic_light.obj Traffic_light.jpg
 #Peripheral Queue - 2, (X,Y, Scale, OBJ File, Texture)
