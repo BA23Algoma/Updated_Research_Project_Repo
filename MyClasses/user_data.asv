@@ -3,11 +3,9 @@
 
 % Open Data File
 
-% [file, path] = uigetfile('', 'Select Raw Data file');
-% 
-% filePath = strcat(path, file);
-% 
-% fid = fopen(filePath);
+[file, path] = uigetfile('', 'Select Raw Data file');
+
+filePath = strcat(
 
 fid = fopen('GazePoint User Data\Test Subject 1\result\User 0_all_gaze.csv');
 
@@ -26,11 +24,7 @@ end
 
 % Open fixation file
 
-%[fileFix, pathFix] = uigetfile('', 'Select fixation Data file');
-%
-% filePathFix = strcat(pathFix, fileFix);
-% 
-% fid = fopen(filePathFix);
+[file, path] = uigetfile('', 'Select fixation Data file');
 
 
 fid = fopen('GazePoint User Data\Test Subject 1\result\User 0_fixations.csv');
@@ -126,7 +120,15 @@ for j =2:dataSize
     if fixation.ID(id) ~= FPOGID(j)
         
         % Search for ID entry number
-        id = find(fixation.ID == FPOGID(j));
+
+        for k = 1:numFixation
+
+            if (fixation.ID(k) == FPOGID(j))
+                id = k;
+                break;
+            end
+
+        end
     
     end
     
