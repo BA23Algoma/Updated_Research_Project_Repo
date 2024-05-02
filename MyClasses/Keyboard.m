@@ -9,6 +9,8 @@ classdef Keyboard < InputDevice
         escapeCode;
         spaceCode; % Previously used sapce bar
         enterCode;
+        printScreen;
+        shot;
         
     end
     
@@ -39,6 +41,7 @@ classdef Keyboard < InputDevice
                 obj.escapeCode      = 27;
                 obj.spaceCode       = 32;
                 obj.enterCode       = 13;
+                obj.printScreen     = 80;
                 
             elseif ismac
                 obj.leftArrowCode   = KbName('leftArrow');
@@ -122,7 +125,7 @@ classdef Keyboard < InputDevice
         end
         
         
-        function [proposedPosition, proposedHeading, quitCode] = PollPlayer(obj, player)
+        function [proposedPosition, proposedHeading, quitCode] = PollPlayer(obj, player, render, maze)
             
             proposedPosition = player.previousPos;
             proposedHeading = player.heading;
@@ -157,6 +160,52 @@ classdef Keyboard < InputDevice
                     proposedPosition(2) = player.previousPos(2) + player.maxVelocityPerFrame * sin(proposedHeading * obj.piOver180);
                     
                 end
+                
+                % Print screen
+                if keyCode(obj.printScreen)
+                    
+                    mazeNumber = maze.fileName;
+                    
+                    cue = 1;
+ 
+                    current_display = Screen('GetImage', render.viewportPtr);
+                    fileName = strcat('maze_screen_shot_', mazeNumber, num2str(cue),'.png'); 
+                    file = fullfile('Objects\Screenshots', fileName);
+                    
+                     if exist(file, 'file')
+                         
+                        valid = false;
+
+                        while ~valid
+
+                           cue = cue + 1;
+                           fileName = strcat('maze_screen_shot', mazeNumber, num2str(cue),'.png'); 
+                           file = fullfile('Objects\Screenshots', fileName);
+
+                           if ~exist(file, 'file')
+
+                               valid = true;  
+
+                           end
+
+
+
+                        end
+                    
+                     end
+                    
+%                     if exist(file, 'file')
+%                         
+%                         cue = '2';
+%                         fileName = strcat('maze_screen_shot', mazeNumber, cue,'.png'); 
+%                         file = fullfile('Objects\Screenshots', fileName);
+%                         
+%                     end
+                    
+                    imwrite(current_display,file);
+
+                end
+                
                 
                 if keyCode(obj.escapeCode)
                     

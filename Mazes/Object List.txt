@@ -1,0 +1,44 @@
+	Proximal Cue 1				Proximal Cue 2					Spare Cues				Replace…	Maze with*=don't change cue!
+Maze number	Object File (Shape)	Texture File (Colour)	Scale		Object File (Shape)	Texture File (Colour)	Scale			Object File (Shape)	Texture File (Colour)			For maze 10- maybe change colours of both cues ?	
+1	wet_floor_sign.obj*	 wet_floor_sign_.png	0.1		gas_container.obj	gasContainer.png	0.1			platic_chair_white.obj 	 platic_chair_white.png			For maze 13- maybe change briefcase to something more upright ?	
+2	fire_hydrantV2.obj*	 fire_hydrant.png	0.003		fireplace.obj 	fireplace.png	0.15			platic_chair_red.obj  	platic_chair_red.png			For maze 15- change anchor to something else more colourful ?	
+3	Street-light.obj	Street-light_D.png	0.15		Beach_ball.obj 	BeachBall.jpg	0.1			record_table.obj  	record_table.png			For maze 16- change stairs cue to something more colourful ?	
+4	Traffic_barrier.obj*	 Traffic_barrier.png	0.1		Traffic_cone.obj 	Traffic_cone	0.1							For maze 17- change table colour ?	
+5	Traffic_light.obj *	Traffic_light.jpg	0.1		Wooden_crate.obj 	Wooden_crate.png	0.1							"For maze 19- change stool colour, it's too camo ?"	
+6	fridge.obj	fridge.jpg	0.1		FireExtinguisher.obj	 FireExtinguisher.png	0.1								
+7	 Tire.obj *	Tire.png	0.1		Rudshack.obj	 Rudshack.png	0.1								
+8	Dolly.obj*	 Dolly.png	0.1		Mailbox.obj	 Mailbox.png	0.1								
+9	Trash.obj *	Trash.png	0.075		Metal_barrel.obj 	Metal_barrel.png	0.1								
+10	ice_machine.obj	  ice_machine.jpeg	0.2		bambo_table.obj	bambo_table.png	0.15								
+11	Firstaid.obj *	FirstAid.png	0.1		ParkingMeter.obj	 ParkingMeter.png	0.1								
+12	TrafficDrum.obj*	 TrafficDrum.jpeg	0.1		paint_can.obj 	PaintCan.png	0.1								
+13	Cabinent.obj	 Cabinent.png	0.5		jukebox.obj	 jukebox.jpg	0.2								
+14	ElectricBox.obj *	ElectricBox.png	0.2		Fan.obj	 Fan.png	0.1								
+15	vending.obj 	 vending.png	0.15		CanStew.obj	 CanStew.png	0.1								
+16	sofa.obj 	 sofa.jpeg	0.3		Log.obj 	Log.jpg	0.1								
+17	Jug.obj 	Jug.png	0.1		platic_chair_blue.obj  	platic_chair_blue.png	0.15								
+18	Radio.obj *	Radio.jpg	0.1		Generator.obj 	Generator.jpeg	0.1								
+19	ottaman.obj 	ottaman.jpg	0.05		Computer.obj	 Computer.png	0.1								
+20	TV.obj *	TV.png	0.1		DogHouse.obj	 DogHouse.png	0.1								
+															
+Maze number	Image				Maze number										
+1	Picture	wet_floor_sign.obj*	 wet_floor_sign_.png	0.1	Picture	gas_container.obj	gasContainer.png	0.1							
+2	Picture	fire_hydrantV2.obj*	 fire_hydrant.png	0.003	Picture	fireplace.obj 	fireplace.png	0.15							
+3	Picture	Street-light.obj	Street-light_D.png	0.15	Picture	Beach_ball.obj 	BeachBall.jpg	0.1							
+4	Picture	Traffic_barrier.obj*	 Traffic_barrier.png	0.1	Picture	Traffic_cone.obj 	Traffic_cone	0.1							
+5	Picture	Traffic_light.obj *	Traffic_light.jpg	0.1	Picture	Wooden_crate.obj 	Wooden_crate.png	0.1							
+6	Picture	fridge.obj	fridge.jpg	0.1	Picture	FireExtinguisher.obj	 FireExtinguisher.png	0.1							
+7	Picture	 Tire.obj *	Tire.png	0.1	Picture	Rudshack.obj	 Rudshack.png	0.1							
+8	Picture	Dolly.obj*	 Dolly.png	0.1	Picture	Mailbox.obj	 Mailbox.png	0.1							
+9	Picture	Trash.obj *	Trash.png	0.075	Picture	Metal_barrel.obj 	Metal_barrel.png	0.1							
+10	Picture	ice_machine.obj	  ice_machine.jpeg	0.2	Picture	bambo_table.obj	bambo_table.png	0.15							
+11	Picture	Firstaid.obj *	FirstAid.png	0.1	Picture	ParkingMeter.obj	 ParkingMeter.png	0.1							
+12	Picture	TrafficDrum.obj*	 TrafficDrum.jpeg	0.1	Picture	paint_can.obj 	PaintCan.png	0.1							
+13	Picture	Cabinent.obj	 Cabinent.png	0.5	Picture	jukebox.obj	 jukebox.jpg	0.2							
+14	Picture	ElectricBox.obj *	ElectricBox.png	0.2	Picture	Fan.obj	 Fan.png	0.1							
+15	Picture	vending.obj 	 vending.png	0.15	Picture	CanStew.obj	 CanStew.png	0.1							
+16	Picture	sofa.obj 	 sofa.jpeg	0.3	Picture	Log.obj 	Log.jpg	0.1							
+17	Picture	Jug.obj 	Jug.png	0.1	Picture	platic_chair_blue.obj  	platic_chair_blue.png	0.15							
+18	Picture	Radio.obj *	Radio.jpg	0.1	Picture	Generator.obj 	Generator.jpeg	0.1							
+19	Picture	ottaman.obj 	ottaman.jpg	0.05	Picture	Computer.obj	 Computer.png	0.1							
+20	Picture	TV.obj *	TV.png	0.1	Picture	DogHouse.obj	 DogHouse.png	0.1							

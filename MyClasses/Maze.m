@@ -98,7 +98,7 @@ classdef Maze
                     
                 else
                     
-                    [proposedPosition, proposedHeading, quitCode] = inputDevice.PollPlayer(player);
+                    [proposedPosition, proposedHeading, quitCode] = inputDevice.PollPlayer(player, render, obj);
                     
                     if quitCode
                         
@@ -159,7 +159,7 @@ classdef Maze
             
             for frameIndex = 1:mazeTour.nFrames
                 
-                [~, ~, quitCode] = inputDevice.PollPlayer(player);
+                [~, ~, quitCode] = inputDevice.PollPlayer(player, render, obj);
                 
                 if quitCode
                     

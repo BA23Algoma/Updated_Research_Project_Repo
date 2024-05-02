@@ -32,7 +32,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--1.85	3.75	0.15	0.0 barrel.obj barrel.png
+-1.85	3.75	0.15	0.0 Street-light.obj Street-light_D.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -4.80	2.15	0.1	0.0 Beach_ball.obj BeachBall.jpg
 //line is listed as width then depth, for the start and end of line

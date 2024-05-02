@@ -30,7 +30,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -5.85	0.15	0.1	90.0 Jug.obj Jug.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--5.85	4.85	0.1	180.0 Tables.obj Table.jpg
+-5.85	4.85	0.15	180.0 platic_chair_blue.obj platic_chair_blue.png
 //line is listed as width then depth, for the start and end of line
 //first 10 walls are the default 'open' maze
 

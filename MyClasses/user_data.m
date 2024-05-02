@@ -24,12 +24,11 @@ classdef user_data
        function obj = user_data()
        
            % Retreive path to data and fixation files
-           % rawData = findFiles('Raw Data');
-           % fixData = findFiles('Fixation Data');
+           %rawData = findFiles('Raw Data');
+           %fixData = findFiles('Fixation Data');
            
            rawData = 'GazePoint User Data\Test Subject 1\result\User 0_all_gaze.csv';
            fixData = 'GazePoint User Data\Test Subject 1\result\User 0_fixations.csv';
-
            
            % Text scan the data files
            obj.dataSet = obj.openFiles(rawData);

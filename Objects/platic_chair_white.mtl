@@ -1,0 +1,14 @@
+# Blender 3.6.5 MTL File: 'None'
+# www.blender.org
+
+newmtl Kursi_Plastik_2_L
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd D:/Projects 3D/3D For Sale/Dirty Plastic Chairs & Tables 3D Game Assets/Blender/Export Object/Kursi Plastik 2/Texture/Kursi Plastik 2_Kursi Plastik 2 L_BaseColor.1001.png
+map_Ns D:/Projects 3D/3D For Sale/Dirty Plastic Chairs & Tables 3D Game Assets/Blender/Export Object/Kursi Plastik 2/Texture/Kursi Plastik 2_Kursi Plastik 2 L_Roughness.1001.png
+map_refl D:/Projects 3D/3D For Sale/Dirty Plastic Chairs & Tables 3D Game Assets/Blender/Export Object/Kursi Plastik 2/Texture/Kursi Plastik 2_Kursi Plastik 2 L_Metallic.1001.png
+map_Bump -bm 1.000000 D:/Projects 3D/3D For Sale/Dirty Plastic Chairs & Tables 3D Game Assets/Blender/Export Object/Kursi Plastik 2/Texture/Kursi Plastik 2_Kursi Plastik 2 L_Normal.1001.png
