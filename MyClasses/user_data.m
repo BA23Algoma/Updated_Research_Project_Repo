@@ -12,11 +12,27 @@ classdef user_data
         FPOGD;
         FPOGID;
         FPOGV;
-        Object_1;
-        Object_2;
+        maze;
+        OBJECT_1;
+        OBJECT_2;
         Distal;
         fixation;
 
+    end
+    
+     properties (Constant = true)
+    
+        fileNameSuffix = '.summaryFile.txt';
+        
+        dataFileHeaders = strcat(...
+            'ORDER\t',...
+            'MAZE_NUMBER\t',...
+            'PROXIMAL_CUE_1_TIME\t',...
+            'PROXIMAL_CUE_1_TIME\t',...
+            'DISTAL_CUE_1_TIME\t',...
+            'NOW_NUM\n'...
+            );
+        
     end
     
    methods
@@ -24,28 +40,30 @@ classdef user_data
        function obj = user_data()
        
            % Retreive path to data and fixation files
-           %rawData = findFiles('Raw Data');
-           %fixData = findFiles('Fixation Data');
+           %rawData = FindFiles('Raw Data');
+           %fixData = FindFiles('Fixation Data');
            
-           rawData = 'GazePoint User Data\Test Subject 1\result\User 0_all_gaze.csv';
-           fixData = 'GazePoint User Data\Test Subject 1\result\User 0_fixations.csv';
+           rawData = 'GazePoint User Data\Test Subject 2\result\User 2_all_gaze.csv';
+           fixData = 'GazePoint User Data\Test Subject 2\result\User 2_fixations.csv';
            
            % Text scan the data files
-           obj.dataSet = obj.openFiles(rawData);
-           obj.sumFixation = obj.openFiles(fixData);
+           obj.dataSet = obj.OpenFiles(rawData);
+           obj.sumFixation = obj.OpenFiles(fixData);
            
            % Preallocate array values
-           obj = obj.preallocate();
+           obj = obj.Preallocate();
            
            % Parse raw and fixation data
-           obj = obj.parseFix();
-           obj =  obj.parseRawData();
-            
+           obj = obj.ParseFixations();
+           obj = obj.ParseRawData();
+           
+           % Build summary data
+           obj = obj.GazeDuration();
             
        end
        
         % Retrieve Data Path to File
-       function [filePath] = findFiles(type)
+       function [filePath] = FindFiles(type)
            
            % Build string for menu of graphical interface
            strInstr = strcat('Select ', type, ' file');
@@ -58,7 +76,7 @@ classdef user_data
        end
        
        % Open the file from the given data path
-       function [InputData] = openFiles(~, path)
+       function [InputData] = OpenFiles(~, path)
            
            InputData = {}; % Initialize incase a error occurs
            
@@ -81,7 +99,7 @@ classdef user_data
        end
        
        % prallocate memeory to arrays
-       function obj = preallocate(obj)
+       function obj = Preallocate(obj)
            
            % Build cell array
             dataSize = numel(obj.dataSet);
@@ -95,18 +113,18 @@ classdef user_data
             obj.FPOGD = zeros(dataSize, 1);
             obj.FPOGID = zeros(dataSize, 1);
             obj.FPOGV = zeros(dataSize, 1);
-
+            
             % First Cue
-            obj.Object_1.xMin = zeros(dataSize, 1);
-            obj.Object_1.xMax = zeros(dataSize, 1);
-            obj.Object_1.yMin = zeros(dataSize, 1);
-            obj.Object_1.yMax = zeros(dataSize, 1);
+            obj.OBJECT_1.xMin = zeros(dataSize, 1);
+            obj.OBJECT_1.xMax = zeros(dataSize, 1);
+            obj.OBJECT_1.yMin = zeros(dataSize, 1);
+            obj.OBJECT_1.yMax = zeros(dataSize, 1);
 
             % Second Cue
-            obj.Object_2.xMin = zeros(dataSize, 1);
-            obj.Object_2.xMax = zeros(dataSize, 1);
-            obj.Object_2.yMin = zeros(dataSize, 1);
-            obj.Object_2.yMax = zeros(dataSize, 1);
+            obj.OBJECT_2.xMin = zeros(dataSize, 1);
+            obj.OBJECT_2.xMax = zeros(dataSize, 1);
+            obj.OBJECT_2.yMin = zeros(dataSize, 1);
+            obj.OBJECT_2.yMax = zeros(dataSize, 1);
 
             % Distal Cue
             obj.Distal.xMin = zeros(dataSize, 1);
@@ -123,7 +141,7 @@ classdef user_data
        end
        
        % Parse the fixation data, ID's and duration
-       function obj = parseFix(obj)
+       function obj = ParseFixations(obj)
            
            % Parse fixation ID table, skip headers
             for i = 2:numel(obj.sumFixation)
@@ -133,18 +151,22 @@ classdef user_data
                 fixationEntry = fixationEntry.';
 
                 % Build fixation struct
-                obj.fixation.ID(i) =  str2double(fixationEntry(8));
                 obj.fixation.duration(i) = str2double(fixationEntry(7));
+                obj.fixation.ID(i) =  str2double(fixationEntry(8));
             end
            
        end
        
        % Parse raw data into arays including fixation start and stop times
-       function obj = parseRawData(obj)
+       function obj = ParseRawData(obj)
            
-           tag = 'X MIN'; % Tag used to track data entries
+           tagX = 'X MIN'; % Tag used to track data entries
+           tagStart = 'START'; % Search for beginning of maze
+           tagEnd = 'END'; % Search for beginning of maze
+           tagCue = '.OBJ'; % Track cues for each maze
 
             id = 1;
+            userRow = 10; % Start of user row in data file
 
             % Parse fixation all gazes table, skip headers
             for j =2:numel(obj.dataSet)
@@ -187,42 +209,135 @@ classdef user_data
                     end
 
                 end
+                
+                % Track start of mazes
+                if contains(rowEntry{userRow}, tagStart)
+                    
+                    if contains(rowEntry{10}, 'PRACTICE', 'IgnoreCase', true)
+                        
+                        obj.maze{(end + 1), 1} = strcat('PRACTICE -', rowEntry{userRow + 1});
+                        
+                    else
+                        
+                        obj.maze{(end + 1), 1} = strcat('EXPERIMENT -',rowEntry{userRow + 2});
 
+                    end
+                    
+                    obj.maze{(end), 2} = j;
+                    
+                end
+                
+                % Track end of mazes
+                if contains(rowEntry{userRow}, tagEnd)
+                    
+                    obj.maze{(end), 3} = j;
+                    
+                end
+                
+                % Track names of objects used in mazes
+                if contains(rowEntry{userRow}, tagCue)
+                    
+                    obj.maze{(end), 4} = rowEntry{userRow};
+                    obj.maze{(end), 5} = 0;
+                    obj.maze{(end), 6} = rowEntry{userRow + 6};
+                    obj.maze{(end), 7} = 0;
+                    obj.maze{(end), 8} = 'DISTAL_CUE(MOON)';
+                    obj.maze{(end), 9} = 0;
+                    
+                end
 
                 % First Cue
-                if strcmp(tag, rowEntry{10})
+                if strcmp(tagX, rowEntry{userRow})
 
-                    obj.Object_1.xMin(j) = str2double(rowEntry(11));
-                    obj.Object_1.xMax(j) = str2double(rowEntry(13));
-                    obj.Object_1.yMin(j) = str2double(rowEntry(15));
-                    obj.Object_1.yMax(j) = str2double(rowEntry(17));
+                    obj.OBJECT_1.xMin(j) = str2double(rowEntry(userRow + 1));
+                    obj.OBJECT_1.xMax(j) = str2double(rowEntry(userRow + 3));
+                    obj.OBJECT_1.yMin(j) = str2double(rowEntry(userRow + 5));
+                    obj.OBJECT_1.yMax(j) = str2double(rowEntry(userRow + 7));
 
                 end
 
                 % Second Cue
-                  if numel(rowEntry) > 18 && strcmp(tag', rowEntry{18})
+                  if numel(rowEntry) > (userRow + 8) && strcmp(tagX, rowEntry{userRow + 8})
 
-                    obj.Object_2.xMin(j) = str2double(rowEntry(19));
-                    obj.Object_2.xMax(j) = str2double(rowEntry(21));
-                    obj.Object_2.yMin(j) = str2double(rowEntry(23));
-                    obj.Object_2.yMax(j) = str2double(rowEntry(25));
+                    obj.OBJECT_2.xMin(j) = str2double(rowEntry(userRow + 9));
+                    obj.OBJECT_2.xMax(j) = str2double(rowEntry(userRow + 11));
+                    obj.OBJECT_2.yMin(j) = str2double(rowEntry(userRow + 13));
+                    obj.OBJECT_2.yMax(j) = str2double(rowEntry(userRow + 15));
 
                   end
 
                 % Distal Cue
-                  if numel(rowEntry) > 26 && strcmp(tag, rowEntry{26})
+                  if numel(rowEntry) > (userRow + 16) && strcmp(tagX, rowEntry{userRow + 16})
 
-                    obj.Distal.xMin(j) = str2double(rowEntry(27));
-                    obj.Distal.xMax(j) = str2double(rowEntry(29));
-                    obj.Distal.yMin(j) = str2double(rowEntry(31));
-                    obj.Distal.yMax(j) = str2double(rowEntry(33));
+                    obj.Distal.xMin(j) = str2double(rowEntry(userRow + 17));
+                    obj.Distal.xMax(j) = str2double(rowEntry(userRow + 19));
+                    obj.Distal.yMin(j) = str2double(rowEntry(userRow + 21));
+                    obj.Distal.yMax(j) = str2double(rowEntry(userRow + 23));
 
                   end
-
+                
 
             end
            
        end
+       
+       function obj = GazeDuration(obj)
+           
+           %{ 
+            Note The time elapsed in seconds since the last system initialization or calibration. 
+            The time stamp is recorded at the end of the transmission of the image from camera to computer. (Gazepoint API - 5.2 TIME)
+            **There the current time to the most recent is used as the
+            duration of individual gazes.
+           %}
+
+           for i = 1:numel(obj.maze(:,1))
+               
+               startMaze = obj.maze{i, 2};
+               endMaze = obj.maze{i, 3};
+               fprintf('start = %d\n', startMaze);
+
+               for j = startMaze:endMaze
+                   
+                   % check gaze is valid and objects on screen
+                   if obj.FPOGV(j) == 0
+                       continue
+                   end
+
+                   % Duration
+                   time = obj.Time(j) - obj.Time(j-1);
+                   
+                   % Check if gaze algins with objects
+                   obj1 = obj.OBJECT_1;
+                   obj2 = obj.OBJECT_2;
+                   distal = obj.Distal;
+                   x = obj.FPOGX;
+                   y = obj.FPOGY;
+                   tolX = 5 * eps(x); % Small comparison value for handling floating point cmoparision
+                   tolY = 5 * eps(y);
+                   
+                   % Check if eye is gazing and update as needed
+                   xMin = x - obj1.xMin(j);
+                   xMax = obj1.xMax(j) - x;
+                   yMin = y - obj1.yMin(j);
+                   yMax = obj1.yMax(j) - y;
+                   
+                   disp(xMin)
+                   
+                   if  (0<xMin && xMin<1)
+                       obj.maze{(i), 5} = time;
+                       disp('first1');
+                   end
+                   
+                   if  (x <= obj2.xMax(j))
+                       obj.maze{(i), 5} = time;
+                       disp('x');                       
+                   end
+                   
+               end
+               
+           end
+       end
+       
        
        
    end
