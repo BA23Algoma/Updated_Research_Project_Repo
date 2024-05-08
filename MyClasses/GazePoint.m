@@ -34,20 +34,57 @@ classdef GazePoint
             
         end
         
+        function Calibrate(obj, render, inputDevice, p, standby, standbyBigNumber, initCalibration)
+
+            if initCalibration
+                
+                cali1Str = 'We are going to calibrate eye tracker before starting experiment.';
+                cali2Str = 'Ensure you are in an upright position.';
+                cali3Str = 'Hit ENTER to begin calibration.';
+                standby.ShowStandby(render, inputDevice, cali1Str, cali2Str, cali3Str);
+                
+            else
+                
+                cali1Str = 'We are going to re-calibrate eye tracker.'; 
+                cali2Str = 'Hit ENTER when ready to begin calibration.';
+                standby.ShowStandby(render, inputDevice, cali1Str, cali2Str);
+                
+            end
+            
+            for j = 3:-1:1
+                
+                standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Calibration starting in.....', j, ' ', 1, 0);
+
+            end
+
+            %Close render window
+            Render.CaliClose();
+
+            WaitSecs(0.5);
+
+            % Calibrate eyetracker
+            obj.GazePointCalibrateInstr();
+
+            % Rebuild and re-initialize render window
+            render = Render([p.screenWidth p.screenHeight p.frameRate]);
+            render = render.InitMazeWindow(p.perspectiveAngle, p.eyeLevel, p.viewPoint, p.cue);
+            
+            % Rebuild rating selection
+            rating = Rating(150, 'Textures');
+            rating = rating.Load(render);
+            
+        end
         
-        function obj = Calibrate(obj)
+        
+        function obj = GazePointCalibrateInstr(obj)
             
             WaitSecs(0.5);
-            
             % Send command to remote gazepoint to display calibration
             % screen
             pnet(obj.client, 'printf', '<SET ID="CALIBRATE_SHOW" STATE="1" /\r\n>');
-            
             WaitSecs(0.5);
-            
             % Start calibration
             pnet(obj.client, 'printf', '<SET ID="CALIBRATE_START" STATE="1" />\r\n');
-
             calibration_complete = false;
 
             %check calibratoin

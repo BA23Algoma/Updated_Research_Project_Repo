@@ -109,26 +109,19 @@ classdef Maze
                     
                     if skipEventCode
                         
-                        coordPoll = coordPoll.Stop();
-                        
-                        tripSum = sum( [obj.tripWireArray(:).tripCount] );
-                        
-                        stats = [tDelta tripSum];
-                        
-                        isCompleteFlag = 0;
-                        
+                        isCompleteFlag = 1; 
                         return;
                         
-                   end
+                    end
                     
                     player.proposedPos = proposedPosition;
                     player.heading = proposedHeading;
                     
-                    if obj.checkCollisionFlag || skipEventCode
+                    if obj.checkCollisionFlag 
                         
                         [collisionFlag, exitCode] = CollisionCheck(obj, player);
                         
-                        if exitCode || skipEventCode
+                        if exitCode 
                             
                             coordPoll = coordPoll.Stop();
                             

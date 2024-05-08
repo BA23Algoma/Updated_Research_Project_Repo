@@ -47,7 +47,7 @@ classdef StandbyBigNumber
             
                 while ~goFlag
 
-                    goFlag = inputDevice.PollStandby();
+                     [goFlag, ~] = inputDevice.PollStandby();
 
                 end
             end

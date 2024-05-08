@@ -111,13 +111,12 @@
     p.nRows = render.nRows;
     p.nCols = render.nCols;         
     
-    
     % Rating
     rating = Rating(150, 'Textures');
     rating = rating.Load(render);
     
     % Standby
-    standby =    Standby;
+    standby = Standby;
     
     % Standby Big Numbers
     standbyBigNumber = StandbyBigNumber;
@@ -132,25 +131,13 @@
         
         WaitSecs(0.5);
         
-        cali1Str = 'We are going to calibrate eye tracker before starting experiment.';
-        cali2Str = 'Ensure you are in an upright position.';
-        cali3Str = 'Hit ENTER to begin calibration.';
-        standby.ShowStandby(render, inputDevice, cali1Str, cali2Str, cali3Str);
-        
-        %Close render window
-        Render.CaliClose();
-        
-        WaitSecs(0.5);
+        initCalibration = 1;
         
         % Calibrate eyetracker
-        ipClient.Calibrate;
-            
-        % Rebuild and re-initialize render window
-        render = Render([p.screenWidth p.screenHeight p.frameRate]);
-        render = render.InitMazeWindow(p.perspectiveAngle, p.eyeLevel, p.viewPoint, p.cue);
-        rating = rating.Load(render);
+        ipClient.Calibrate(render, inputDevice, p, standby, standbyBigNumber, initCalibration);
         
     else
+        
         ipClient.client = -1;
         
     end
@@ -177,8 +164,6 @@
             
             %initialize maze to send client values
             strGP = strcat('Beginning of,', mazeFileName);
-            disp(strGP);
-            disp(ipClient);
             ipClient.Log(strGP);
             
         end
@@ -223,7 +208,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
 
-            standby.ShowStandby(render, inputDevice, 'Get Ready for Practice Tour', 'Hit ENTER when ready.');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready for Practice Tour', 'Hit ENTER when ready.');
             
             % Maze tour
             mazeTour = MazeTour(maze.FilePrefix, p.tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
@@ -259,7 +244,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
 
-            standby.ShowStandby(render, inputDevice, 'Get Ready For Maze Tour', 'Hit ENTER when ready.');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready For Maze Tour', 'Hit ENTER when ready.');
             
             maze.Tour(mazeTour, render, player, inputDevice);
             
@@ -272,7 +257,7 @@
         message1Str = 'You may take a short break.';
         message2Str = 'Please stay seated and do not disturb others.';
         message3Str = 'Hit ENTER to begin next phase.';
-        standby.ShowStandby(render, inputDevice, message1Str, message2Str, message3Str);
+        standby.ShowStandby(render, inputDevice, ipClient, message1Str, message2Str, message3Str);
         
     end
     
@@ -295,18 +280,16 @@
             % Load Peripheral cues 
             % render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
  
-            standby.ShowStandby(render, inputDevice, 'Get Ready for Practice Block', 'Hit ENTER when ready.');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready for Practice Block', 'Hit ENTER when ready.');
             
             count = 3;
             
             % Maze Practice Maze Run
             if p.pracRun
 
-                for i = 1:count
+                for i = count:-1:1
 
-                    countdown = (count + 1) - i;
-
-                    standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', countdown, 'Next is the performance phase.', 1, 0);
+                    standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', i, 'Next is the performance phase.', 1, 0);
 
                 end
 
@@ -317,11 +300,9 @@
 
             
             % Maze run  
-            for j = 1:count
-
-                countdown = (count + 1) - j;
-
-                standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', countdown, 'End of current block.', 1, 0);
+            for j = count:-1:1
+                
+                standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', j, 'End of current block.', 1, 0);
 
             end
             
@@ -347,7 +328,7 @@
         for blockIndex = 1:expSchedule.nBlocks
 
             message1Str = sprintf('Block %i', blockIndex);
-            standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
+            standby.ShowStandby(render, inputDevice, ipClient, message1Str, 'Hit ENTER when ready.');
 
             %    -----------------------
             % JOL
@@ -403,22 +384,10 @@
                     
                     if mazeNum == (expSchedule.nMazes / 2) &&  ipClient.client ~= -1
                         
-                        cali1Str = 'We are going to re-calibrate eye tracker.';
-                        cali2Str = 'Hit ENTER when ready to begin calibration.';
-                        standby.ShowStandby(render, inputDevice, cali1Str, cali2Str);
-                        
-                        %Close render window
-                        Render.CaliClose();
-                        
-                        WaitSecs(0.5);
+                        initCalibration = 0;
                         
                         % Calibrate eyetracker
-                        ipClient.Calibrate;
-            
-                        % Rebuild and re-initialize render window
-                        render = Render([p.screenWidth p.screenHeight p.frameRate]);
-                        render = render.InitMazeWindow(p.perspectiveAngle, p.eyeLevel, p.viewPoint, p.cue);
-                        rating = rating.Load(render);
+                        ipClient.Calibrate(render, inputDevice, p, rating, standby, standbyBigNumber, initCalibration);
             
                     end
 
@@ -437,7 +406,7 @@
 
                         % Practice Maze run      
                         %message1Str = sprintf('Get Ready To Run Practice Maze');
-                        %standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
+                        %standby.ShowStandby(render, inputDevice, ipClient, message1Str, 'Hit ENTER when ready.');
 
                         % Send practice note information to Gazepoint
                         if  ipClient.client ~= -1
@@ -447,11 +416,9 @@
                             
                         end
         
-                        for i = 1:count
+                        for i = count:-1:1
 
-                            countdown = (count + 1) - i;
-
-                            standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', countdown, 'Next is the performance phase.', 1, 0);
+                            standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', i, 'Next is the performance phase.', 1, 0);
 
                         end
 
@@ -472,11 +439,9 @@
                     % message1Str = sprintf('Get Ready To Run Test Maze');
                     % standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
 
-                    for j = 1:count
+                    for j = count:-1:1
 
-                        countdown = (count + 1) - j;
-
-                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', countdown, 'End of current block.', 1, 0);
+                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', j, 'End of current block.', 1, 0);
 
                     end
                     
@@ -513,11 +478,15 @@
                     expSchedule.trials(trialIndex, Schedule.COL.RCJ_RATING) = rcjRating;
 
                 end
+                
+                if mazeNum ~= expSchedule.nBlocks
+                    message1Str = 'You may take a short break.';
+                    message2Str = 'Please stay seated and do not disturb others.';
+                    message3Str = 'Hit ENTER to begin next block.';
+                    standby.ShowStandby(render, inputDevice, ipClient, message1Str, message2Str, message3Str);
 
-                message1Str = 'You may take a short break.';
-                message2Str = 'Please stay seated and do not disturb others.';
-                message3Str = 'Hit ENTER to begin next block.';
-                standby.ShowStandby(render, inputDevice, message1Str, message2Str, message3Str);
+                end
+                
 
             end
 

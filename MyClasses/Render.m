@@ -1,4 +1,4 @@
-classdef Render
+ classdef Render
     
     properties
         
@@ -739,22 +739,43 @@ classdef Render
 %                  if collisionFlag == 1
 %                      fprintf('It actually works!!!!!!\n');
 %                  end
-%                 
+%               
+                names = {
+                    'XMin', 'XMax','YMin', 'YMax',...
+                    'CueOneXMin', 'CueOneXMax'...
+                    'CueOneYMin', 'CueOneYMax'...
+                    'CueTwoXMin', 'CueTwoXMax'...
+                    'CueTwoYMin', 'CueTwoYMax'...
+                    'DistalXMin', 'DistalXMax'...
+                    'DistalYMin', 'DistalYMax'...
+                    };
+                    
+                for index = 1:numel(names)
+                    gazePointSTR.(names{index}) = '';
+                end
+                
+                gazePointSTR.XMin = ' X_Min ';
+                gazePointSTR.XMax = ' X_Max ';
+                gazePointSTR.YMin = ' Y_Min ';
+                gazePointSTR.YMax = ' Y_Max ';
+                
+                gap = '';
+                
                 if ipClient.client ~= -1
                     
                     if onScreen
                         
-                        % Gap for gaze point file 
-                        dpGap = ',,,,,,,,,,,,,,,,';
-
-                        strCheck = strcat(dpGap, 'X min,', num2str(xMin), ', X max,', num2str(xMax),...
-                            ', Y min,', num2str(yMin), ', Y max,', num2str(yMax));
-                        ipClient.Log(strCheck);
+                        gazePointSTR.DistalXMax =  num2str(xMin);
+                        gazePointSTR.DistalXMax = num2str(xMax);
+                        gazePointSTR.DistalYMin = num2str(yMin);
+                        gazePointSTR.DistalYMax =  num2str(yMax);
 
                     else
-
-                        % Used to balance delimiters
-                         ipClient.Blank;
+                        
+                        gazePointSTR.DistalXMin = gap;
+                        gazePointSTR.DistalXMax = gap;
+                        gazePointSTR.DistalYMin = gap;
+                        gazePointSTR.DistalYMax = gap;
 
                     end
                 end
@@ -777,76 +798,50 @@ classdef Render
 
                      % Run call list code to render object
                      glCallList(obj.displayListOne);
+                     glCallList(obj.displayListTwo);
 
                      %------------BoundedBox Setup----------------
                      boundingBoxOne = boundBoxInitialize(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
+                     boundingBoxTwo = boundBoxInitialize(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
+
 
                      % Check if bounding box is on screen and determine screen
                      % coordinates
                      [onScreen, minMax] = IsBoundingBoxVisible(obj, boundingBoxOne, maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, minReq); 
-
-                     % Send to gazepoint if running eyetracker
-                      if ipClient.client ~= -1 
-                          
-                          if onScreen
-                          
-                              dpEndGap = ',,,,,,,,,,,,,,,,';
-
-                              strCheck = strcat('', 'X min,', num2str(minMax(1)), ', X max,', num2str(minMax(2)),...
-                                  ', Y min,', num2str(minMax(3)), ', Y max,', num2str(minMax(4)), dpEndGap);
-                              ipClient.Log(strCheck);
-
-                          else
-
-                              ipClient.Blank;
-
-                          end
-                          
-                      end
-
-                      % Draw bounding box
-                      if drawBox == true
-                          
-                          glColor3f(1, 0, 0);
-                          obj = obj.drawBoundingBox(boundingBoxOne);
-
-                          
-                     end
-                       
-                     glPopMatrix;
-
-
-                    %----------------------------------Second QUE------------------------------------------------%
-
-                      glPushMatrix;
-
-                      % Run call list code to render object
-                      glCallList(obj.displayListTwo);
-
-                      %------------BoundedBox Setup----------------
-                     boundingBoxTwo = boundBoxInitialize(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
-
-                     % Check if bounding box is on screen and determine screen
-                     % coordinates
                      [onScreenTwo, minMaxTwo] = IsBoundingBoxVisible(obj, boundingBoxTwo, maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, minReq); 
 
                      % Send to gazepoint if running eyetracker
                       if ipClient.client ~= -1 
                           
+                           if onScreen
+                               
+                              gazePointSTR.CueOneXMin =  num2str(minMax(1));
+                              gazePointSTR.CueOneXMax = num2str(minMax(2));
+                              gazePointSTR.CueOneYMin = num2str(minMax(3));
+                              gazePointSTR.CueOneYMax =  num2str(minMax(4));
+                              
+                           else
+                              gazePointSTR.CueOneXMin = gap;
+                              gazePointSTR.CueOneXMax = gap;
+                              gazePointSTR.CueOneYMin = gap;
+                              gazePointSTR.CueOneYMax = gap;
+
+                           end
+                          
                           if onScreenTwo
 
-                              dpEndGap = ',,,,,,,,,';
-
-                              strCheck = strcat(',,,,,,,,', 'X min,', num2str(minMaxTwo(1)), ', X max,', num2str(minMaxTwo(2)),...
-                                  ', Y min,', num2str(minMaxTwo(3)), ', Y max,', num2str(minMaxTwo(4)), dpEndGap);
-                              ipClient.Log(strCheck);
-
+                              gazePointSTR.CueTwoXMin =  num2str(minMaxTwo(1));
+                              gazePointSTR.CueOneXMax = num2str(minMaxTwo(2));
+                              gazePointSTR.CueTwoYMin = num2str(minMaxTwo(3));
+                              gazePointSTR.CueTwoYMax =  num2str(minMaxTwo(4));
                           else
-
-                              % Used to balance delimiters
-                              ipClient.Blank;
+                              gazePointSTR.CueTwoXMin = gap;
+                              gazePointSTR.CueTwoXMax = gap;
+                              gazePointSTR.CueTwoYMin = gap;
+                              gazePointSTR.CueTwoYMax = gap;
 
                           end
+                          
                           
                       end
                       
@@ -854,6 +849,7 @@ classdef Render
                       if drawBox == true
                           
                           glColor3f(1, 0, 0);
+                          obj = obj.drawBoundingBox(boundingBoxOne);
                           obj = obj.drawBoundingBox(boundingBoxTwo);
                           
                       end
@@ -861,7 +857,29 @@ classdef Render
                      glPopMatrix;
                  
                 end
-           end
+            end
+           
+            % Send to gazepoint if running eyetracker
+              if ipClient.client ~= -1 
+
+                  strLog = strcat(...
+                      gazePointSTR.XMin, gazePointSTR.CueOneXMin,...
+                      gazePointSTR.XMax, gazePointSTR.CueOneXMax,...
+                      gazePointSTR.YMin, gazePointSTR.CueOneYMin,...
+                      gazePointSTR.YMax, gazePointSTR.CueOneYMax,...
+                      gazePointSTR.XMin, gazePointSTR.CueTwoXMin,...
+                      gazePointSTR.XMax, gazePointSTR.CueTwoXMax,...
+                      gazePointSTR.YMin, gazePointSTR.CueTwoYMin,...
+                      gazePointSTR.YMax, gazePointSTR.CueTwoYMax,...
+                      gazePointSTR.XMin, gazePointSTR.DistalXMin,...
+                      gazePointSTR.XMax, gazePointSTR.DistalXMax,...
+                      gazePointSTR.YMin, gazePointSTR.DistalYMin,...
+                      gazePointSTR.YMax, gazePointSTR.DistalYMax...
+                      );
+                  
+                      ipClient.Log(strLog);
+
+              end
        
             glPopMatrix();
             Screen('EndOpenGL', obj.viewportPtr);

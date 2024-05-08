@@ -10,7 +10,8 @@ classdef Keyboard < InputDevice
         spaceCode; % Previously used sapce bar
         enterCode;
         printScreen;
-        shot;
+        skipEventCode;
+        calibrate;
         
     end
     
@@ -41,7 +42,9 @@ classdef Keyboard < InputDevice
                 obj.escapeCode      = 27;
                 obj.spaceCode       = 32;
                 obj.enterCode       = 13;
-                obj.printScreen     = 80;
+                obj.printScreen     = 80; % keycode p
+                obj.skipEventCode   = 83; % key code s
+                obj.calibrate       = 67; % key code c
                 
             elseif ismac
                 obj.leftArrowCode   = KbName('leftArrow');
@@ -56,9 +59,10 @@ classdef Keyboard < InputDevice
         end
         
         
-        function goFlag = PollStandby(obj)
+        function [goFlag, calibrationFlag] = PollStandby(obj)
             
             goFlag = 0;
+            calibrationFlag = 0;
             
             [keyIsDown, ~, keyCode, ~] = KbCheck();
             
@@ -68,10 +72,14 @@ classdef Keyboard < InputDevice
                     
                     goFlag = 1;
                     
-                elseif keyCode(obj.escapeCode)
+                elseif keyCode(obj.calibrate)
+                    
+                    calibrationFlag = 1;
+                   
+                elseif  keyCode(obj.escapeCode)
                     
                     Render.Close();
-                
+                    
                 else
                     
                     % do nothing
@@ -83,8 +91,7 @@ classdef Keyboard < InputDevice
                 
             end
             
-        end
-        
+        end       
         
         function [xPosDelta, decisionFlag] = PollRating(obj)
             
@@ -125,11 +132,12 @@ classdef Keyboard < InputDevice
         end
         
         
-        function [proposedPosition, proposedHeading, quitCode] = PollPlayer(obj, player, render, maze)
+        function [proposedPosition, proposedHeading, quitCode, skipEventCode] = PollPlayer(obj, player, render, maze)
             
             proposedPosition = player.previousPos;
             proposedHeading = player.heading;
             quitCode = 0;
+            skipEventCode = 0;
             
             [keyIsDown, ~, keyCode, ~] = KbCheck();
             
@@ -206,6 +214,11 @@ classdef Keyboard < InputDevice
 
                 end
                 
+                if keyCode(obj.skipEventCode)
+                    
+                    skipEventCode = 1;
+                    
+                end
                 
                 if keyCode(obj.escapeCode)
                     
