@@ -18,11 +18,14 @@ classdef SplashScreen
         function ShowSplashScreen(render, inputDevice, imageFileName, imagePathName, varargin)
             
             imageMatrix = imread(fullfile(imagePathName, imageFileName));
-            [nRows, nCols, ~] = size(imageMatrix);
+            [~, nCols, ~] = size(imageMatrix);
+            
+            disp(nCols);
             
             newCols = ceil(nCols * render.scaleRatio);
-            %newRows = ceil(newCols * render.scaleRatio);
-            newRows = ceil(nRows * render.scaleRatio);
+            newRows = ceil(newCols * render.scaleRatio);
+            disp(newCols);
+            disp(newRows);
             
             splashScreenRect = SetRect(0, 0, newCols, newRows);
             

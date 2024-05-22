@@ -155,7 +155,7 @@
             if obj.viewPoint == 2
                 
                 obj.teapotFlag = 1;
-                obj.ceilingFlag = 1; 
+                obj.ceilingFlag = 1;
                 obj.tripwireFlag = 0;
                 
             else
@@ -792,7 +792,7 @@
                     % Set whether to draw bounding boxes for objects
                     drawBox = false;
 
-                    %----------------------------------Proximal QUE------------------------------------------------%
+                    %----------------------------------First QUE------------------------------------------------%
 
                      glPushMatrix;
 

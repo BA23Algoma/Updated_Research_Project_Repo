@@ -13,7 +13,7 @@
 55.000000	% perspectiveAngle
 -0.400000	% eyeLevel (-0.5 is a good number)
 0.100000	% coordPollInterval
-180.000000	% coordPollTimeLimit
+240.000000	% coordPollTimeLimit
 1920		% screenWidth
 1080		% screenHeight
 45.000000	% praticePollTimeLimit

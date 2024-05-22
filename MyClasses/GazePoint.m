@@ -34,8 +34,15 @@ classdef GazePoint
             
         end
         
-        function Calibrate(obj, render, inputDevice, p, standby, standbyBigNumber, initCalibration)
+        function Calibrate(obj, render, inputDevice, initCalibration)
 
+            % initialize standy and standbyBig
+            % Standby
+            standby = Standby;
+
+            % Standby Big Numbers
+            standbyBigNumber = StandbyBigNumber;
+            
             if initCalibration
                 
                 cali1Str = 'We are going to calibrate eye tracker before starting experiment.';
@@ -56,6 +63,22 @@ classdef GazePoint
                 standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Calibration starting in.....', j, ' ', 1, 0);
 
             end
+            
+            % tempory holder for render values to recreate render
+            % window based on p constructor
+            tempValues = [render.newWidth render.newHeight...
+                render.newHz render.scaleRatio render.perspectiveAngle...
+                render.eyeLevel render.viewPoint render.perCueFlag...
+                ];
+
+            tempNames = {'screenWidth', 'screenHeight', 'frameRate',...
+                'scaleRatio', 'perspectiveAngle', 'eyeLevel',... 
+                'viewPoint', 'cue', ...
+                };
+
+            for index = 1:numel(tempNames)
+                temp.(tempNames{index}) = tempValues(index);
+            end
 
             %Close render window
             Render.CaliClose();
@@ -66,8 +89,10 @@ classdef GazePoint
             obj.GazePointCalibrateInstr();
 
             % Rebuild and re-initialize render window
-            render = Render([p.screenWidth p.screenHeight p.frameRate]);
-            render = render.InitMazeWindow(p.perspectiveAngle, p.eyeLevel, p.viewPoint, p.cue);
+            render = Render([temp.screenWidth temp.screenHeight temp.frameRate]);
+            render = render.InitMazeWindow(temp.perspectiveAngle, temp.eyeLevel, temp.viewPoint, temp.cue);
+            
+            obj.ValidCalibration(render, inputDevice, standby, standbyBigNumber);
             
             % Rebuild rating selection
             rating = Rating(150, 'Textures');
@@ -85,15 +110,16 @@ classdef GazePoint
             WaitSecs(0.5);
             % Start calibration
             pnet(obj.client, 'printf', '<SET ID="CALIBRATE_START" STATE="1" />\r\n');
-            calibration_complete = false;
+            calibComplete = false;
 
             %check calibratoin
-            while ~calibration_complete
-                pnet(obj.client, 'printf', '<GET ID = "CALIBRATION_RESULT_PT" />\r\n');
+            while ~calibComplete
+                pnet(obj.client, 'printf', '<GET ID = "CALIB_RESULT" />\r\n');
                 cali = pnet(obj.client, 'read', 'noblock');
-
+              
                 if contains(cali, '<CAL ID="CALIB_RESULT"')
-                    calibration_complete = true;
+                    calibComplete = true;
+                    WaitSecs(0.5);
                     % Close calibration screen
                     pnet(obj.client, 'printf', '<SET ID="CALIBRATE_SHOW" STATE="0" /\r\n>');
                     pause(3)
@@ -103,7 +129,32 @@ classdef GazePoint
                 end
                 
             end
+            
+             
+        end
         
+        % Ensure calibratino completed successfully
+        function obj = ValidCalibration(obj, render, inputDevice, standby, standbyBigNumber)
+            
+            pnet(obj.client, 'printf', '<GET ID="CALIBRATE_RESULT_SUMMARY" /\r\n>');
+            WaitSecs(0.5);
+            summary = pnet(obj.client, 'read', 'noblock');
+            
+            expression = 'VALID_POINTS="(\d+)"';
+            valid = regexp(summary,expression,'tokens');
+            numValid = str2double(valid{1});
+                 
+            if numValid >= 4
+                
+                standby.ShowStandby(render, inputDevice, 'Calibration Successful', 'Hit ENTER to continue experiment' );
+                
+            else
+                
+                standby.ShowStandby(render, inputDevice, 'Calibration Unsuccessful', 'Hit ENTER to initialize calibration process' );
+                obj.Calibrate(render, inputDevice, standby, standbyBigNumber, 1)
+                
+            end
+            
         end
         
          % Used to balance delimiters

@@ -35,21 +35,20 @@ classdef Standby
             
                 [goFlag, calibrationFlag] = inputDevice.PollStandby();
                 
-                if calibrationFlag && exist('ipClient', 'var') && ipClient.client ~= -1
+                if calibrationFlag && exist('ipClient', 'var')
                     
-                    % indicate not the first calibration
+                    % reset flag and indicate not the first calibration for
+                    % instructions
                     initCalibration = 0;
+                    
 
                     % run calibration
                     ipClient.Calibrate(render, inputDevice, initCalibration);
                     
                     % Re-initialize original window
-                    %goFlag = 0;
+                    goFlag = 0;
                     obj.ShowStandby(render, inputDevice, varargin{:});
     
-                    % reset flag 
-                    calibrationFlag = 0;
-                    
                 end
                 
             end
@@ -61,7 +60,10 @@ classdef Standby
         function obj = printToScreen(obj, render, varargin)
                 
             strings = varargin{:};
-            nVargin = numel(strings);                
+            nVargin = numel(strings);
+            
+            disp(strings);
+                
             
             normBoundsRect = Screen('TextBounds', render.viewportPtr, 'test');
             rectHeight = RectHeight(normBoundsRect);

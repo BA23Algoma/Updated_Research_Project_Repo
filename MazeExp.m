@@ -1,4 +1,4 @@
-        function       MazeExp                    
+             function       MazeExp                    
                                                                      
      %     %      GUI modifiable parameters                                  
     %     p .participantI d               = 0;      
@@ -134,7 +134,7 @@
         initCalibration = 1;
         
         % Calibrate eyetracker
-        ipClient.Calibrate(render, inputDevice, p, standby, standbyBigNumber, initCalibration);
+        ipClient.Calibrate(render, inputDevice, initCalibration);
         
     else
         
@@ -142,8 +142,13 @@
         
     end
     
+    % Main Experiment Instructions
+    
+    splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions1.jpg', 'Textures'); 
+
+    
     % -----------------------
-    % Pre-PHASE 1 (SELECT MAZE RUN)
+    % Pre-PHASE 1 (SELECT MAZE RUN)`
     if p.singleMaze
         
         WaitSecs(0.25);
@@ -268,7 +273,7 @@
     if p.blockPracticeFlag
         
         schedule = Schedule(p.participantId, 'PRACTICE', p.nPracticeTrials, p.tourHand);
-        splashScreen.ShowSplashScreen(render, inputDevice, 'Instructions3.jpg', 'Textures');
+        splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions2.jpg', 'Textures', ipClient, Standby);
         
         for trialIndex = 1:schedule.nTrials
             
@@ -280,13 +285,17 @@
             % Load Peripheral cues 
             % render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
  
-            standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready for Practice Block', 'Hit ENTER when ready.');
+            %standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready for Practice Block', 'Hit ENTER when ready.');
             
             count = 3;
             
             % Maze Practice Maze Run
             if p.pracRun
-
+                
+                
+                 
+                splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions3.jpg', 'Textures', ipClient, Standby);
+                
                 for i = count:-1:1
 
                     standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', i, 'Next is the performance phase.', 1, 0);
@@ -299,7 +308,11 @@
             end
 
             
-            % Maze run  
+            % Maze run 
+            
+            splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions4.jpg', 'Textures', ipClient, Standby);
+
+                            
             for j = count:-1:1
                 
                 standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', j, 'End of current block.', 1, 0);
@@ -317,7 +330,7 @@
     % -----------------------
     % PHASE 4 EXPERIMENT (JOLs and RCJs)
     
-    splashScreen.ShowSplashScreen(render, inputDevice, 'Instructions4.jpg', 'Textures');
+    splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions5.jpg', 'Textures');
     
     expSchedule = expSchedule.Randomize();
     
@@ -387,7 +400,7 @@
                         initCalibration = 0;
                         
                         % Calibrate eyetracker
-                        ipClient.Calibrate(render, inputDevice, p, rating, standby, standbyBigNumber, initCalibration);
+                        ipClient.Calibrate(render, inputDevice, initCalibration);
             
                     end
 
