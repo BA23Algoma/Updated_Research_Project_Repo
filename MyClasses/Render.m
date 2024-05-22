@@ -468,7 +468,7 @@
             
             glMatrixMode(obj.GL.PROJECTION);
             glLoadIdentity();
-            gluPerspective(obj.perspectiveAngle, 1/obj.screenAspectRatio, 0.08, 20.0);
+            gluPerspective(obj.perspectiveAngle, 1/obj.screenAspectRatio, 0.08, 100.0);
             glClearDepth(1.0);
             glMatrixMode(obj.GL.MODELVIEW);
             glLoadIdentity();
@@ -532,53 +532,55 @@
             %   Draw ceiling
             if obj.ceilingFlag
 
+                l = 30; % length
+                
                 % Top
                 glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(7));
                 glBegin(obj.GL.QUADS);
-                glTexCoord2f(0.0, 0.0); glVertex3f(-13.5, 6.0, -6.5);
-                glTexCoord2f(0.0, 1); glVertex3f(-13.5, 6.0, 13.5);
-                glTexCoord2f(1, 1); glVertex3f(13.5, 6.0, 6.5);
-                glTexCoord2f(1, 0.0); glVertex3f(6.5, 6.0, -6.5);
+                glTexCoord2f(0.0, 0.0); glVertex3f(-l, l/2, -l);
+                glTexCoord2f(0.0, 1); glVertex3f(-l, l/2, l);
+                glTexCoord2f(1, 1); glVertex3f(l, l/2, l);
+                glTexCoord2f(1, 0.0); glVertex3f(l, l/2, -l);
                 glEnd;
 
                  % Right sky wall
                 glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(5));
                 glBegin(obj.GL.QUADS);
-                glTexCoord2f(0.0, 0.0); glVertex3f(-13.5, 0.0, -6.5);  
-                glTexCoord2f(0.0, 1); glVertex3f(-13.5, 6.0, -6.5);
+                glTexCoord2f(0.0, 0.0); glVertex3f(-l, -l/2, -l);  
+                glTexCoord2f(0.0, 1); glVertex3f(-l, l/2, -l);
 
-                glTexCoord2f(1, 1); glVertex3f(6.5, 6.0, -6.5);
-                glTexCoord2f(1, 0.0); glVertex3f(6.5, 0.0, -6.5);
+                glTexCoord2f(1, 1); glVertex3f(l, l/2, -l);
+                glTexCoord2f(1, 0.0); glVertex3f(l, -l/2, -l);
                 glEnd;
                 
                 % Left wall
                 glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(6));
                 glBegin(obj.GL.QUADS);
-                glTexCoord2f(0.0, 0.0); glVertex3f(13.5, 0.0, 6.5);
-                glTexCoord2f(0.0, 1); glVertex3f(13.5, 6.0, 6.5);
+                glTexCoord2f(0.0, 0.0); glVertex3f(l, -l/2, l);
+                glTexCoord2f(0.0, 1); glVertex3f(l, l/2, l);
 
-                glTexCoord2f(1, 1); glVertex3f(-13.5, 6.0, 13.5);
-                glTexCoord2f(1, 0.0); glVertex3f(-13.5, 0.0, 13.5);
+                glTexCoord2f(1, 1); glVertex3f(-l, l/2, l);
+                glTexCoord2f(1, 0.0); glVertex3f(-l, -l/2, l);
                 glEnd;
 
                 % Back sky wall
                 glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(9));
                 glBegin(obj.GL.QUADS);
-                glTexCoord2f(0.0, 0.0); glVertex3f(-13.5, 0.0, 13.5);  
-                glTexCoord2f(0.0, 1); glVertex3f(-13.5, 6.0, 13.5);
+                glTexCoord2f(0.0, 0.0); glVertex3f(-l, -l/2, l);  
+                glTexCoord2f(0.0, 1); glVertex3f(-l, l/2, l);
 
-                glTexCoord2f(1, 1); glVertex3f(-13.5, 6.0, -6.5);
-                glTexCoord2f(1, 0.0); glVertex3f(-13.5, 0.0, -6.5);
+                glTexCoord2f(1, 1); glVertex3f(-l, l/2, -l);
+                glTexCoord2f(1, 0.0); glVertex3f(-l, -l/2, -l);
                 glEnd;
 
                  % Front sky wall
                 glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(10));
                 glBegin(obj.GL.QUADS);
-                glTexCoord2f(0.0, 0.0); glVertex3f(6.5, 0.0, -6.5);  
-                glTexCoord2f(0.0, 1); glVertex3f(6.5, 6.0, -6.5);
+                glTexCoord2f(0.0, 0.0); glVertex3f(l, -l/2, -l);  
+                glTexCoord2f(0.0, 1); glVertex3f(l, l/2, -l);
 
-                glTexCoord2f(1, 1); glVertex3f(13.5, 6.0, 6.5);     
-                glTexCoord2f(1, 0.0); glVertex3f(13.5, 0.0, 6.5);
+                glTexCoord2f(1, 1); glVertex3f(l, l/2, l);     
+                glTexCoord2f(1, 0.0); glVertex3f(l, -l/2, l);
                 glEnd;
                                                              
             end
@@ -798,58 +800,38 @@
 
                      % Run call list code to render object
                      glCallList(obj.displayListOne);
+                     
+                     %------------BoundedBox Setup----------------
+                     boundingBoxOne = boundBoxInitialize(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
+                     
+                     % Check if bounding box is on screen 
+                     [onScreen, minMax] = IsBoundingBoxVisible(obj, boundingBoxOne, maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, minReq); 
+
+                     if drawBox == true
+                          
+                         glColor3f(1, 0, 0);
+                         obj = obj.drawBoundingBox(boundingBoxOne);
+                          
+                     end
+                      
+                     glPopMatrix;
+
+                     glPushMatrix;
+ 
                      glCallList(obj.displayListTwo);
 
                      %------------BoundedBox Setup----------------
-                     boundingBoxOne = boundBoxInitialize(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
                      boundingBoxTwo = boundBoxInitialize(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
 
 
-                     % Check if bounding box is on screen and determine screen
-                     % coordinates
-                     [onScreen, minMax] = IsBoundingBoxVisible(obj, boundingBoxOne, maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, minReq); 
+                     % Check if bounding box is on screen 
                      [onScreenTwo, minMaxTwo] = IsBoundingBoxVisible(obj, boundingBoxTwo, maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, minReq); 
 
-                     % Send to gazepoint if running eyetracker
-                      if ipClient.client ~= -1 
-                          
-                           if onScreen
-                               
-                              gazePointSTR.CueOneXMin =  num2str(minMax(1));
-                              gazePointSTR.CueOneXMax = num2str(minMax(2));
-                              gazePointSTR.CueOneYMin = num2str(minMax(3));
-                              gazePointSTR.CueOneYMax =  num2str(minMax(4));
-                              
-                           else
-                              gazePointSTR.CueOneXMin = gap;
-                              gazePointSTR.CueOneXMax = gap;
-                              gazePointSTR.CueOneYMin = gap;
-                              gazePointSTR.CueOneYMax = gap;
-
-                           end
-                          
-                          if onScreenTwo
-
-                              gazePointSTR.CueTwoXMin =  num2str(minMaxTwo(1));
-                              gazePointSTR.CueOneXMax = num2str(minMaxTwo(2));
-                              gazePointSTR.CueTwoYMin = num2str(minMaxTwo(3));
-                              gazePointSTR.CueTwoYMax =  num2str(minMaxTwo(4));
-                          else
-                              gazePointSTR.CueTwoXMin = gap;
-                              gazePointSTR.CueTwoXMax = gap;
-                              gazePointSTR.CueTwoYMin = gap;
-                              gazePointSTR.CueTwoYMax = gap;
-
-                          end
-                          
-                          
-                      end
                       
                       % Draw bounding box
                       if drawBox == true
                           
                           glColor3f(1, 0, 0);
-                          obj = obj.drawBoundingBox(boundingBoxOne);
                           obj = obj.drawBoundingBox(boundingBoxTwo);
                           
                       end
@@ -857,10 +839,40 @@
                      glPopMatrix;
                  
                 end
+                
             end
            
             % Send to gazepoint if running eyetracker
               if ipClient.client ~= -1 
+
+                  if onScreen
+                      
+                      gazePointSTR.CueOneXMin =  num2str(minMax(1));
+                      gazePointSTR.CueOneXMax = num2str(minMax(2));
+                      gazePointSTR.CueOneYMin = num2str(minMax(3));
+                      gazePointSTR.CueOneYMax =  num2str(minMax(4));
+
+                  else
+                      gazePointSTR.CueOneXMin = gap;
+                      gazePointSTR.CueOneXMax = gap;
+                      gazePointSTR.CueOneYMin = gap;
+                      gazePointSTR.CueOneYMax = gap;
+
+                  end
+
+                  if onScreenTwo
+
+                      gazePointSTR.CueTwoXMin =  num2str(minMaxTwo(1));
+                      gazePointSTR.CueOneXMax = num2str(minMaxTwo(2));
+                      gazePointSTR.CueTwoYMin = num2str(minMaxTwo(3));
+                      gazePointSTR.CueTwoYMax =  num2str(minMaxTwo(4));
+                  else
+                      gazePointSTR.CueTwoXMin = gap;
+                      gazePointSTR.CueTwoXMax = gap;
+                      gazePointSTR.CueTwoYMin = gap;
+                      gazePointSTR.CueTwoYMax = gap;
+
+                  end
 
                   strLog = strcat(...
                       gazePointSTR.XMin, gazePointSTR.CueOneXMin,...
