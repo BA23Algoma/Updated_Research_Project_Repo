@@ -98,8 +98,8 @@ classdef Maze
                     
                 else
                     
-                    [proposedPosition, proposedHeading, quitCode, skipEventCode] = inputDevice.PollPlayer(player, render, obj);
-                    
+                    [proposedPosition, proposedHeading, quitCode, skipEventCode, upKey] = inputDevice.PollPlayer(player, render, obj);
+
                     if quitCode
                         
                         render.Close();
@@ -126,7 +126,7 @@ classdef Maze
                     
                     if obj.checkCollisionFlag || skipEventCode
                         
-                        [collisionFlag, exitCode] = CollisionCheck(obj, player);
+                        [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey);
                         
                         if exitCode || skipEventCode
                             
@@ -142,7 +142,11 @@ classdef Maze
                             
                         elseif collisionFlag
                             
-                            player.proposedPos = player.previousPos;
+                            %player.proposedPos = player.previousPos;
+                            
+                            player.proposedPos =  player.previousPos + slideVector;
+                            
+                           
                             
                         else
                             
@@ -351,6 +355,8 @@ classdef Maze
                 % Distal Queue Locations
 
                  fgets(fid); % Skip comment line
+                 fgets(fid); % Skip Distal cue location line
+                 %{
                  s = fgets(fid);
                  d = sscanf(s, '%f');
                  obj.distalCue.x(1) = d(1);
@@ -361,6 +367,16 @@ classdef Maze
                  obj.distalCue.y(3) = d(6);
                  obj.distalCue.x(4) = d(7);
                  obj.distalCue.y(4) = d(8);
+                 %}
+                 
+                 obj.distalCue.x(1) = -20.0;
+                 obj.distalCue.y(1) = 8.0;
+                 obj.distalCue.x(2) = -8.0;
+                 obj.distalCue.y(2) = 20.0;
+                 obj.distalCue.x(3) = -6.0;
+                 obj.distalCue.y(3) = 20.0;
+                 obj.distalCue.x(4) = -20.0;
+                 obj.distalCue.y(4) = 6.0;
 
                  % Peripheral Queue Locations
 
@@ -486,12 +502,16 @@ classdef Maze
         end
         
         
-        function [collisionFlag, exitCode] = CollisionCheck(obj, player)
+        function [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey)
             
             exitCode = 0;
              
             % Normal walls
             collisionFlag = 0;
+            
+            % Startwith player position
+            slideVector = 0;
+            
             for wallIndex = 1:obj.nNormalWalls
                 
                 thisWall = obj.normalWallArray(wallIndex);
@@ -503,6 +523,26 @@ classdef Maze
                 b = z1 - z0; % Line segment end point vertical coordinate
                 c = player.proposedPos(1) - x0; % Circle center horizontal coordinate
                 d = player.proposedPos(2) - z0; % Circle center vertical coordinate
+                
+                % Determine normal wall vector
+                normalWallVector = [b, -a];
+                normalWallVector = normalWallVector / norm(normalWallVector);
+                
+                orientationRadians = player.heading * (pi / 180);
+                
+                if upKey
+                    inputMagnitude = player.maxVelocityPerFrame;
+                    disp(upKey);
+                else
+                     inputMagnitude = -player.maxVelocityPerFrame;
+                end
+
+                % Determine the amount to slide along walls
+                movementDirection = [-cos(orientationRadians), sin(orientationRadians)];
+                movementVector = movementDirection * inputMagnitude;
+                normalComponent = dot(movementVector, normalWallVector) * normalWallVector;
+
+                slideVector = movementVector - normalComponent;
                 
                 isCollision = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
                 

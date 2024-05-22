@@ -269,9 +269,10 @@
     
      % Main Experiment Instructions
     
-    splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions1.jpg', 'Textures');
     
     if p.blockPracticeFlag
+        
+        splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions1.jpg', 'Textures');
         
         schedule = Schedule(p.participantId, 'PRACTICE', p.nPracticeTrials, p.tourHand);
         splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions2.jpg', 'Textures', ipClient, Standby);
@@ -326,18 +327,22 @@
             
         end
         
+    elseif ~p.singleMaze
+        
+         splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions1.jpg', 'Textures');
+         
     end
     
     % -----------------------
     % PHASE 4 EXPERIMENT (JOLs and RCJs)
-    
-    splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions5.jpg', 'Textures');
     
     expSchedule = expSchedule.Randomize();
     
     mazeNum = 0;
     
     if ~p.singleMaze
+        
+         splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions5.jpg', 'Textures');
     
         for blockIndex = 1:expSchedule.nBlocks
 

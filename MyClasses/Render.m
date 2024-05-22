@@ -155,7 +155,7 @@
             if obj.viewPoint == 2
                 
                 obj.teapotFlag = 1;
-                obj.ceilingFlag = 1; 
+                obj.ceilingFlag = 0; 
                 obj.tripwireFlag = 0;
                 
             else
@@ -181,13 +181,17 @@
 
 
             % Skybox texture loading
-
-            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, 'skybox_right.jpg'));
-            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, 'skybox_left.jpg'));
-            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, 'skybox_top.jpg'));
-            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, 'skybox_ground.jpg'));
-            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, 'skybox_back.jpg'));
-            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, 'skybox_front.jpg'));
+            
+            skyboxSet = ["dust" "haze" "humble" "quirk" "skybox" "trance" "valley"];
+            
+            box = skyboxSet(5);
+            
+            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_rt.jpg', box, box)));
+            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_lf.jpg', box, box)));
+            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_up.jpg', box, box)));
+            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_dn.jpg', box, box)));
+            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_bk.jpg', box, box)));
+            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_ft.jpg', box, box)));
             
             % Distal feature (moon)
             if obj.distalCueFlag
@@ -308,8 +312,9 @@
             glTexImage2D(obj.GL.TEXTURE_2D, 0, obj.GL.RGB, texObj.nRows, texObj.nCols, 0, obj.GL.RGB, obj.GL.UNSIGNED_BYTE, texObj.pixels);
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_WRAP_S,obj.GL.REPEAT);
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_WRAP_T,obj.GL.REPEAT);
-            glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_MAG_FILTER,obj.GL.NEAREST);
-            glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_MIN_FILTER,obj.GL.NEAREST);
+            glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_MAG_FILTER,obj.GL.LINEAR);
+            glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_MIN_FILTER,obj.GL.NEAREST_MIPMAP_LINEAR);
+            glGenerateMipmap(obj.GL.TEXTURE_2D);
             
         end
 
@@ -650,13 +655,13 @@
 
                  % Translate the sphere to the desired location
                 location = obj.distalCueLocation;
-                glTranslatef(maze.distalCue.x(location), 3, maze.distalCue.y(location));
+                glTranslatef(maze.distalCue.x(location), 6, maze.distalCue.y(location));
 
                 %Draw Distall Queue
                 glBindTexture(obj.DistalCueTarget, obj.DistalCueName);
                 theSphere = gluNewQuadric;
                 gluQuadricTexture(theSphere, obj.GL.TRUE);
-                sphereRadius = 0.5;
+                sphereRadius = 1.25;
                 gluSphere(theSphere, sphereRadius, numSlices, numSlices);
 
                 % Restore the transformation state
