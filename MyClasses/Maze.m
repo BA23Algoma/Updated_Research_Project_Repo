@@ -98,7 +98,7 @@ classdef Maze
                     
                 else
                     
-                    [proposedPosition, proposedHeading, quitCode, skipEventCode, upKey] = inputDevice.PollPlayer(player, render, obj);
+                    [proposedPosition, proposedHeading, quitCode, skipEventCode, upKey, dwKey] = inputDevice.PollPlayer(player, render, obj);
 
                     if quitCode
                         
@@ -126,7 +126,7 @@ classdef Maze
                     
                     if obj.checkCollisionFlag || skipEventCode
                         
-                        [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey);
+                        [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey, dwKey);
                         
                         if exitCode || skipEventCode
                             
@@ -473,7 +473,7 @@ classdef Maze
                 
                 end
                 
-                isCollision = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
+                [isCollision, ~] = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
                 
                 if isCollision
                     
@@ -502,15 +502,30 @@ classdef Maze
         end
         
         
-        function [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey)
-            
+        function [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey, dwKey)
+
             exitCode = 0;
-             
+            
             % Normal walls
             collisionFlag = 0;
             
-            % Startwith player position
-            slideVector = 0;
+            % Edge Flag
+            edgeFlag = 0;
+            
+            % Determine whether player is moving forward or backward
+            if upKey
+                inputMagnitude = player.maxVelocityPerFrame / 2;
+            elseif dwKey
+                 inputMagnitude = -player.maxVelocityPerFrame / 2;
+            else
+                inputMagnitude = 0;
+            end
+
+            % Determine the amount to slide along walls
+            slideVector = [0, 0];
+            orientationRadians = player.heading * (pi / 180);
+            movementDirection = [-cos(orientationRadians), sin(orientationRadians)];
+            movementVector = movementDirection * inputMagnitude;
             
             for wallIndex = 1:obj.nNormalWalls
                 
@@ -523,35 +538,36 @@ classdef Maze
                 b = z1 - z0; % Line segment end point vertical coordinate
                 c = player.proposedPos(1) - x0; % Circle center horizontal coordinate
                 d = player.proposedPos(2) - z0; % Circle center vertical coordinate
-                
-                % Determine normal wall vector
-                normalWallVector = [b, -a];
-                normalWallVector = normalWallVector / norm(normalWallVector);
-                
-                orientationRadians = player.heading * (pi / 180);
-                
-                if upKey
-                    inputMagnitude = player.maxVelocityPerFrame;
-                    disp(upKey);
-                else
-                     inputMagnitude = -player.maxVelocityPerFrame;
-                end
 
-                % Determine the amount to slide along walls
-                movementDirection = [-cos(orientationRadians), sin(orientationRadians)];
-                movementVector = movementDirection * inputMagnitude;
-                normalComponent = dot(movementVector, normalWallVector) * normalWallVector;
-
-                slideVector = movementVector - normalComponent;
-                
-                isCollision = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
+                [isCollision, edgeCase] = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
                 
                 if isCollision
                     
                     collisionFlag = 1;
-                    return;
+                    edgeFlag = edgeCase;
+                    
+                    % Determine normal wall vector
+                    normalWallVector = [-b, a];
+                    normalWallVector = normalWallVector / norm(normalWallVector);
+                
+                    % Calcualte slide vector for collision
+                    normalComponent = dot(movementVector, normalWallVector) * normalWallVector;
+                    slideVector = movementVector - normalComponent;
+                    movementVector = slideVector;
                     
                 end
+ 
+            end
+            
+            if collisionFlag
+                
+                %if edgeFlag && abs(dot(slideVector, normalWallVector)) < eps(0)
+                    
+                 %   slideVector = [0, 0];
+     
+               % end
+                
+               return;
                 
             end
             
@@ -568,7 +584,7 @@ classdef Maze
                 c = player.proposedPos(1) - x0; % Circle center horizontal coordinate
                 d = player.proposedPos(2) - z0; % Circle center vertical coordinate
                 
-                isCollision = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
+                [isCollision, ~] = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
                 
                 if isCollision
                     
@@ -601,9 +617,10 @@ classdef Maze
     
     methods (Static)
         
-        function collisionFlag = CollisionDetect(a, b, c, d, rSqr)
+        function [collisionFlag, edgeCase] = CollisionDetect(a, b, c, d, rSqr)
             
             collisionFlag = 0;
+            edgeCase = 0;
             
             %     % Optional orientation computation
             %     circleSideIsRight = 0;
@@ -615,27 +632,33 @@ classdef Maze
             %     end
             
             % If collision is possible
+            
             thisIndex = find((d.*a - c.*b).*(d.*a - c.*b) <= rSqr * (a.*a + b.*b));
             
             a = a(thisIndex);
             b = b(thisIndex);
             c = c(thisIndex);
             d = d(thisIndex);
+
             
             startInside = (c.*c + d.*d <= rSqr);
-            
             % Line segment start point is inside the circle
             
             endInside = ((a-c).*(a-c) + (b-d).*(b-d) <= rSqr);
-            
+            disp(startInside);
             middleInside = (~startInside & ~endInside & c.*a + d.*b >= 0 & c.*a + d.*b <= a.*a + b.*b);
             
-            if any( [any(startInside) any(endInside) any(middleInside)] )
+            if any( [any(startInside) any(endInside)] )
+                
+                collisionFlag = 1;
+                edgeCase = 1;
+                
+            elseif any(middleInside)
                 
                 collisionFlag = 1;
                 
             end
-            
+           
         end
         
                 

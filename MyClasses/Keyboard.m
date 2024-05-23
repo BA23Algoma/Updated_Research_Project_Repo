@@ -132,13 +132,14 @@ classdef Keyboard < InputDevice
         end
         
         
-        function [proposedPosition, proposedHeading, quitCode, skipEventCode, upKey] = PollPlayer(obj, player, render, maze)
+        function [proposedPosition, proposedHeading, quitCode, skipEventCode, upKey, dwKey] = PollPlayer(obj, player, render, maze)
             
             proposedPosition = player.previousPos;
             proposedHeading = player.heading;
             quitCode = 0;
             skipEventCode = 0;
             upKey = 0;
+            dwKey = 0;
             
             [keyIsDown, ~, keyCode, ~] = KbCheck();
             
@@ -160,6 +161,7 @@ classdef Keyboard < InputDevice
                     
                     proposedPosition(1) = player.previousPos(1) + player.maxVelocityPerFrame * cos(proposedHeading * obj.piOver180);
                     proposedPosition(2) = player.previousPos(2) - player.maxVelocityPerFrame * sin(proposedHeading * obj.piOver180);
+                    dwKey = 1;
                     
                 end
                 
