@@ -842,6 +842,39 @@
                       end
                       
                      glPopMatrix;
+                     
+                     if ipClient.client ~= -1 
+
+                      if onScreen
+
+                          gazePointSTR.CueOneXMin =  num2str(minMax(1));
+                          gazePointSTR.CueOneXMax = num2str(minMax(2));
+                          gazePointSTR.CueOneYMin = num2str(minMax(3));
+                          gazePointSTR.CueOneYMax =  num2str(minMax(4));
+
+                      else
+                          gazePointSTR.CueOneXMin = gap;
+                          gazePointSTR.CueOneXMax = gap;
+                          gazePointSTR.CueOneYMin = gap;
+                          gazePointSTR.CueOneYMax = gap;
+
+                      end
+
+                      if onScreenTwo
+
+                          gazePointSTR.CueTwoXMin =  num2str(minMaxTwo(1));
+                          gazePointSTR.CueOneXMax = num2str(minMaxTwo(2));
+                          gazePointSTR.CueTwoYMin = num2str(minMaxTwo(3));
+                          gazePointSTR.CueTwoYMax =  num2str(minMaxTwo(4));
+                      else
+                          gazePointSTR.CueTwoXMin = gap;
+                          gazePointSTR.CueTwoXMax = gap;
+                          gazePointSTR.CueTwoYMin = gap;
+                          gazePointSTR.CueTwoYMax = gap;
+
+                      end
+                  
+                     end
                  
                 end
                 
@@ -849,35 +882,6 @@
            
             % Send to gazepoint if running eyetracker
               if ipClient.client ~= -1 
-
-                  if onScreen
-                      
-                      gazePointSTR.CueOneXMin =  num2str(minMax(1));
-                      gazePointSTR.CueOneXMax = num2str(minMax(2));
-                      gazePointSTR.CueOneYMin = num2str(minMax(3));
-                      gazePointSTR.CueOneYMax =  num2str(minMax(4));
-
-                  else
-                      gazePointSTR.CueOneXMin = gap;
-                      gazePointSTR.CueOneXMax = gap;
-                      gazePointSTR.CueOneYMin = gap;
-                      gazePointSTR.CueOneYMax = gap;
-
-                  end
-
-                  if onScreenTwo
-
-                      gazePointSTR.CueTwoXMin =  num2str(minMaxTwo(1));
-                      gazePointSTR.CueOneXMax = num2str(minMaxTwo(2));
-                      gazePointSTR.CueTwoYMin = num2str(minMaxTwo(3));
-                      gazePointSTR.CueTwoYMax =  num2str(minMaxTwo(4));
-                  else
-                      gazePointSTR.CueTwoXMin = gap;
-                      gazePointSTR.CueTwoXMax = gap;
-                      gazePointSTR.CueTwoYMin = gap;
-                      gazePointSTR.CueTwoYMax = gap;
-
-                  end
 
                   strLog = strcat(...
                       gazePointSTR.XMin, gazePointSTR.CueOneXMin,...

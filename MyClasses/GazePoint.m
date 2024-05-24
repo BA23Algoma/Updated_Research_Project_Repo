@@ -151,7 +151,7 @@ classdef GazePoint
             else
                 
                 standby.ShowStandby(render, inputDevice, 'Calibration Unsuccessful', 'Hit ENTER to initialize calibration process' );
-                obj.Calibrate(render, inputDevice, standby, standbyBigNumber, 1)
+                obj.Calibrate(render, inputDevice, 0)
                 
             end
             

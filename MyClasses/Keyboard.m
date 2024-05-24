@@ -68,7 +68,7 @@ classdef Keyboard < InputDevice
             
             if keyIsDown
                                     
-                if keyCode(obj.enterCode)
+                if keyCode(obj.enterCode) || keyCode(obj.spaceCode)
                     
                     goFlag = 1;
                     
@@ -110,7 +110,7 @@ classdef Keyboard < InputDevice
                     
                     xPosDelta = 1;
                     
-                elseif keyCode(obj.enterCode)
+                elseif keyCode(obj.enterCode) || keyCode(obj.spaceCode)
                     
                     decisionFlag = 1;
                     

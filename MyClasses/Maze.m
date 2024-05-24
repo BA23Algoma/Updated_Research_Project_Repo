@@ -126,7 +126,7 @@ classdef Maze
                     
                     if obj.checkCollisionFlag || skipEventCode
                         
-                        [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey, dwKey);
+                        [collisionFlag, exitCode, slideVector, edgeFlag] = CollisionCheck(obj, player, upKey, dwKey);
                         
                         if exitCode || skipEventCode
                             
@@ -140,14 +140,16 @@ classdef Maze
                             
                             return;
                             
+                        %elseif edgeFlag
+                            
+                            %player.proposedPos = player.previousPos + slideVector;
+                            
                         elseif collisionFlag
                             
                             %player.proposedPos = player.previousPos;
                             
                             player.proposedPos =  player.previousPos + slideVector;
-                            
-                           
-                            
+                                 
                         else
                             
                             player.proposedPos = proposedPosition;
@@ -473,7 +475,7 @@ classdef Maze
                 
                 end
                 
-                [isCollision, ~] = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
+                isCollision = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
                 
                 if isCollision
                     
@@ -502,15 +504,17 @@ classdef Maze
         end
         
         
-        function [collisionFlag, exitCode, slideVector] = CollisionCheck(obj, player, upKey, dwKey)
+        function [collisionFlag, exitCode, slideVector, edgeFlag] = CollisionCheck(obj, player, upKey, dwKey)
 
             exitCode = 0;
             
             % Normal walls
             collisionFlag = 0;
             
-            % Edge Flag
             edgeFlag = 0;
+            
+            % Set perimeter circular radius player radius * 2
+            radius = player.bodyRadius * 1.25;
             
             % Determine whether player is moving forward or backward
             if upKey
@@ -533,18 +537,22 @@ classdef Maze
                 
                 x0 = thisWall.p1(1); x1 = thisWall.p2(1); z0 = thisWall.p1(2); z1 = thisWall.p2(2);
                 
-                % Translate everything so that line segment start point to (0, 0)
-                a = x1 - x0; % Line segment end point horizontal coordinate
-                b = z1 - z0; % Line segment end point vertical coordinate
-                c = player.proposedPos(1) - x0; % Circle center horizontal coordinate
-                d = player.proposedPos(2) - z0; % Circle center vertical coordinate
+                % Check for collision              
+               [isCollision, endPointCollision, endPoint] = Maze.normalWallCollisionDetect(x0, x1, z0, z1, radius, player.proposedPos(1), player.proposedPos(2), player.bodyRadiusSquared);
 
-                [isCollision, edgeCase] = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
-                
-                if isCollision
+                %if endPointCollision
+                    
+                    %collisionFlag = 1;
+                    %edgeFlag = 1;
+                    %movementVector = Maze.handleEndPointCollision(x0, x1, z0, z1, endPoint, radius, player.proposedPos(1), player.proposedPos(2), player.bodyRadius, player.previousPos(1), player.previousPos(2));
+                     
+                if isCollision 
                     
                     collisionFlag = 1;
-                    edgeFlag = edgeCase;
+                    
+                    % Translate everything so that line segment start point to (0, 0)
+                    a = x1 - x0; % Line segment end point horizontal coordinate
+                    b = z1 - z0; % Line segment end point vertical coordinate
                     
                     % Determine normal wall vector
                     normalWallVector = [-b, a];
@@ -553,6 +561,16 @@ classdef Maze
                     % Calcualte slide vector for collision
                     normalComponent = dot(movementVector, normalWallVector) * normalWallVector;
                     slideVector = movementVector - normalComponent;
+                    
+                    % Ensure propsoed position does not pentrate wall
+                    minDistance = Maze.calculateMinDistanceToWall(x0, x1, z0, z1, (slideVector(1) + player.previousPos(1)), (slideVector(2) + player.previousPos(2)), player.bodyRadius);
+
+                    if minDistance < 0
+                        
+                        slideVector = Maze.handleEndPointCollision(x0, x1, z0, z1, endPoint, radius, player.proposedPos(1), player.proposedPos(2), player.bodyRadius, player.previousPos(1), player.previousPos(2));
+                    
+                    end
+                    
                     movementVector = slideVector;
                     
                 end
@@ -566,7 +584,8 @@ classdef Maze
                  %   slideVector = [0, 0];
      
                % end
-                
+                slideVector = movementVector;
+
                return;
                 
             end
@@ -584,7 +603,7 @@ classdef Maze
                 c = player.proposedPos(1) - x0; % Circle center horizontal coordinate
                 d = player.proposedPos(2) - z0; % Circle center vertical coordinate
                 
-                [isCollision, ~] = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
+                isCollision = Maze.CollisionDetect(a, b, c, d, player.bodyRadiusSquared);
                 
                 if isCollision
                     
@@ -617,10 +636,9 @@ classdef Maze
     
     methods (Static)
         
-        function [collisionFlag, edgeCase] = CollisionDetect(a, b, c, d, rSqr)
+        function collisionFlag = CollisionDetect(a, b, c, d, rSqr)
             
             collisionFlag = 0;
-            edgeCase = 0;
             
             %     % Optional orientation computation
             %     circleSideIsRight = 0;
@@ -632,7 +650,63 @@ classdef Maze
             %     end
             
             % If collision is possible
+            thisIndex = find((d.*a - c.*b).*(d.*a - c.*b) <= rSqr * (a.*a + b.*b));
             
+            a = a(thisIndex);
+            b = b(thisIndex);
+            c = c(thisIndex);
+            d = d(thisIndex);
+            
+            startInside = (c.*c + d.*d <= rSqr);
+            
+            % Line segment start point is inside the circle
+            
+            endInside = ((a-c).*(a-c) + (b-d).*(b-d) <= rSqr);
+            
+            middleInside = (~startInside & ~endInside & c.*a + d.*b >= 0 & c.*a + d.*b <= a.*a + b.*b);
+            
+            if any( [any(startInside) any(endInside) any(middleInside)] )
+                
+                collisionFlag = 1;
+                
+            end
+            
+        end
+        
+        
+        function [collisionFlag, endPointCollisionFlag, endPoint] = normalWallCollisionDetect(x0, x1, y0, y1, radius, px, py, rSqr)
+            
+            collisionFlag = 0;
+            endPointCollisionFlag = 0;
+            endPoint = [0,0];
+            
+            % First check collsion with edge buffers (circular buffers)
+            
+            distanceStart = sqrt((px - x0)^2 + (py - y0)^2);
+            distanceEnd = sqrt((px - x1)^2 + (py - y1)^2);
+            
+            if distanceStart <= radius
+                
+                endPointCollisionFlag = 1;
+                endPoint = [x0, y0];
+                %return;
+                
+            elseif distanceEnd <= radius
+                
+                endPointCollisionFlag = 1;
+                endPoint = [x1, y1];
+                %return;
+                
+            end
+            
+            % Check if any collision is possible
+            
+            % Translate everything so that line segment start point to (0, 0)
+            a = x1 - x0; % Line segment end point horizontal coordinate
+            b = y1 - y0; % Line segment end point vertical coordinate
+            c = px - x0; % Circle center horizontal coordinate
+            d = py - y0; % Circle center vertical coordinate
+                
             thisIndex = find((d.*a - c.*b).*(d.*a - c.*b) <= rSqr * (a.*a + b.*b));
             
             a = a(thisIndex);
@@ -645,15 +719,10 @@ classdef Maze
             % Line segment start point is inside the circle
             
             endInside = ((a-c).*(a-c) + (b-d).*(b-d) <= rSqr);
-            disp(startInside);
+            
             middleInside = (~startInside & ~endInside & c.*a + d.*b >= 0 & c.*a + d.*b <= a.*a + b.*b);
             
-            if any( [any(startInside) any(endInside)] )
-                
-                collisionFlag = 1;
-                edgeCase = 1;
-                
-            elseif any(middleInside)
+            if any( [any(startInside) any(endInside) any(middleInside)] )
                 
                 collisionFlag = 1;
                 
@@ -686,6 +755,63 @@ classdef Maze
 %             end
 %             
 %         end
+
+        
+        function movementVector = handleEndPointCollision(x0, x1, z0, z1, endPoint, radius, px, py, bodyRadius, prevX, prevY)
+            
+            collisionVector = [px - endPoint(1), py - endPoint(2)];
+            distance = norm(collisionVector);
+            
+            if distance == 0
+                distance = 0.01;
+            end
+            
+            normal = collisionVector / distance;
+            
+            % Determine player adjusment
+            shift = radius + bodyRadius + 0.01; % Ensures no overlap
+            playerX = endPoint(1) + normal(1) * shift;
+            playerY = endPoint(2) + normal(2) * shift;
+            playerPrev = [prevX, prevY];
+            playerProposed = [px,py];
+            playerTarget = [playerX, playerY];
+            beta = 0.05;
+            
+            adjustedMovementVector = (1 - beta) * playerProposed + beta * playerTarget;
+            
+            movementVector = adjustedMovementVector - playerPrev;
+            
+            minDistance = Maze.calculateMinDistanceToWall(x0, x1, z0, z1, adjustedMovementVector(1), adjustedMovementVector(2), bodyRadius);
+                
+            
+        end
+        
+        function minDitance = calculateMinDistanceToWall(x0, x1, y0, y1, px, py, bodyRadius)
+            
+            %Start of wall to end of wall
+            wallVector = [x1 - x0, y1 - y0];
+            
+            %Start of wall to player
+            wallToPlayer = [px - x0, py - y0];
+            
+            wallLengthSquared = dot(wallVector, wallVector);
+            if wallLengthSquared == 0
+                minDitance = norm(wallToPlayer);
+                return;
+            end
+            
+            projection = dot(wallToPlayer, wallVector) / wallLengthSquared;
+            
+            % Ensure projection is within the segment
+            projection = max(0, min(1, projection));
+            closestPoint = [x0, y0] + projection * wallVector;
+            
+            % Determine player adjusment
+            distanceVector = [px, py] - closestPoint;
+            
+            minDitance = norm(distanceVector) - bodyRadius;
+            
+        end
         
     end
     
