@@ -142,7 +142,7 @@ classdef Maze
                             
                         elseif edgeFlag
                             
-                            player.proposedPos = player.previousPos + slideVector;
+                            player.proposedPos = slideVector;
                             
                         elseif collisionFlag
                             
@@ -514,7 +514,7 @@ classdef Maze
             edgeFlag = 0;
             
             % Set perimeter circular radius player radius * 2
-            radius = player.bodyRadius;
+            radius = player.bodyRadius * 1.25;
             
             % Determine whether player is moving forward or backward
             if upKey
@@ -569,10 +569,8 @@ classdef Maze
                         
                         edgeFlag = 1;
                         
-                        slideVector = Maze.handleEndPointCollision(x0, x1, z0, z1, endPoint, radius, (slideVector(1) + player.previousPos(1)), (slideVector(2) + player.previousPos(2)), player.bodyRadius, player.previousPos(1), player.previousPos(2));
+                        slideVector = Maze.handleEndPointCollision(x0, x1, z0, z1, endPoint, radius, slideVector(1), slideVector(2), player.bodyRadius, player.previousPos(1), player.previousPos(2));
                     
-                        % slideVector = [0, 0];
-                        
                     end
                     
                     movementVector = slideVector;
@@ -689,21 +687,21 @@ classdef Maze
             distanceStart = sqrt((px - x0)^2 + (py - y0)^2);
             distanceEnd = sqrt((px - x1)^2 + (py - y1)^2);
             
-            
+            %{
             if distanceStart <= radius
                 
-                %endPointCollisionFlag = 1;
+                endPointCollisionFlag = 1;
                 endPoint = [x0, y0];
                 %return;
                 
             elseif distanceEnd <= radius
                 
-                %endPointCollisionFlag = 1;
+                endPointCollisionFlag = 1;
                 endPoint = [x1, y1];
                 %return;
                 
             end
-            
+            %}
             
             % Check if any collision is possible
             
@@ -728,12 +726,12 @@ classdef Maze
             
             middleInside = (~startInside & ~endInside & c.*a + d.*b >= 0 & c.*a + d.*b <= a.*a + b.*b);
             
-            if any( [any(startInside) any(endInside) ] )
+            if any( [any(startInside) any(endInside) any(middleInside) ] )
                 
                 collisionFlag = 1;
                 endPointCollisionFlag = 1;
                 
-            elseif any(middleInside)
+            elseif 
                 
                 collisionFlag = 1;
                 
@@ -771,8 +769,6 @@ classdef Maze
         function movementVector = handleEndPointCollision(x0, x1, z0, z1, endPoint, radius, px, py, bodyRadius, prevX, prevY)
             
             collisionVector = [px - endPoint(1), py - endPoint(2)];
-            disp(px);disp(py);
-            disp(endPoint);
             distance = norm(collisionVector);
             
             if distance == 0
@@ -782,8 +778,7 @@ classdef Maze
             normal = collisionVector / distance;
             
             % Determine player adjusment
-            % shift = radius + bodyRadius + 0.01; % Ensures no overlap
-            shift = 2 * bodyRadius + (bodyRadius * 0.01);
+            shift = radius + bodyRadius + 0.01; % Ensures no overlap
             playerX = endPoint(1) + normal(1) * shift;
             playerY = endPoint(2) + normal(2) * shift;
             playerPrev = [prevX, prevY];
@@ -793,7 +788,7 @@ classdef Maze
             
             adjustedMovementVector = (1 - beta) * playerProposed + beta * playerTarget;
             
-             movementVector = adjustedMovementVector - playerPrev;
+            movementVector = adjustedMovementVector - playerPrev;
             
            % minDistance = Maze.calculateMinDistanceToWall(x0, x1, z0, z1, adjustedMovementVector(1), adjustedMovementVector(2), bodyRadius);
                 
