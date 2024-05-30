@@ -92,7 +92,7 @@ classdef GazePoint
             render = Render([temp.screenWidth temp.screenHeight temp.frameRate]);
             render = render.InitMazeWindow(temp.perspectiveAngle, temp.eyeLevel, temp.viewPoint, temp.cue);
             
-            obj.ValidCalibration(render, inputDevice, standby, standbyBigNumber);
+            obj.ValidCalibration(render, inputDevice, standby);
             
             % Rebuild rating selection
             rating = Rating(150, 'Textures');
@@ -125,7 +125,7 @@ classdef GazePoint
                     pause(3)
                     
                 else
-                    pause(2);
+                    pause(1);
                 end
                 
             end
@@ -134,16 +134,17 @@ classdef GazePoint
         end
         
         % Ensure calibratino completed successfully
-        function obj = ValidCalibration(obj, render, inputDevice, standby, standbyBigNumber)
+        function obj = ValidCalibration(obj, render, inputDevice, standby)
             
             pnet(obj.client, 'printf', '<GET ID="CALIBRATE_RESULT_SUMMARY" /\r\n>');
             WaitSecs(0.5);
             summary = pnet(obj.client, 'read', 'noblock');
+
             
             expression = 'VALID_POINTS="(\d+)"';
             valid = regexp(summary,expression,'tokens');
             numValid = str2double(valid{1});
-                 
+     
             if numValid >= 4
                 
                 standby.ShowStandby(render, inputDevice, 'Calibration Successful', 'Hit ENTER to continue experiment' );

@@ -14,6 +14,9 @@
     %     p.viewPoint                     = 1; 
     %     p.frameRate                     = 60;
     %     p.perspectiv eAngle             = 45;
+    
+     
+    
      %    p.eyeLevel                      = -0.55;
     %     p.coo rdPollInterval            = 0.1; 
     %     p.coordPollTimeLimit            = 240;
@@ -317,7 +320,7 @@
                             
             for j = count:-1:1
                 
-                standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', j, 'End of current block.', 1, 0);
+                standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFORMANCE PHASE begins in:', j, 'End of current block.', 1, 0);
 
             end
             
@@ -460,7 +463,7 @@
 
                     for j = count:-1:1
 
-                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFOMANCE PHASE begins in:', j, 'End of current block.', 1, 0);
+                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'PERFORMANCE PHASE begins in:', j, 'End of current block.', 1, 0);
 
                     end
                     

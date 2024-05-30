@@ -125,7 +125,7 @@ classdef Rating
                 
                 for numberIndex = 1:obj.nNumbers
                     
-                    numberRectArray(:, numberIndex) = CenterRectOnPoint(render.scaleRatio * SetRect(0, 0, obj.imageSize, obj.imageSize), mazePosX(numberIndex), render.y0)';
+                    numberRectArray(:, numberIndex) = CenterRectOnPoint(render.scaleRatio * SetRect(0, 0, obj.imageSize, obj.imageSize), mazePosX(numberIndex), render.y0 + render.scaleRatio * 30)';
                     
                 end
                 

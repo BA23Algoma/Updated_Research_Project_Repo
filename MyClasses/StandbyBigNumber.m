@@ -22,8 +22,43 @@ classdef StandbyBigNumber
             Screen('TextStyle', render.viewportPtr, 0);
             normBoundsRect1 = Screen('TextBounds', render.viewportPtr, topMessageStr);
             normBoundsRect1 = CenterRectOnPoint(normBoundsRect1, render.x0, render.y0 -  150);
-            Screen('DrawText', render.viewportPtr, topMessageStr, normBoundsRect1(RectLeft), normBoundsRect1(RectTop), [127 127 127], [0 0 0]);
-            
+
+            if contains(topMessageStr, 'PHASE')
+                
+                 if contains(topMessageStr, 'LEARNING')       
+                        
+                     textColor = [127 0 0]; % red
+                        
+                 elseif contains(topMessageStr, 'PERFORMANCE') 
+                        
+                     textColor = [0 127 0]; % green
+                        
+                 else
+                     
+                     textColor = [127 127 127]; % white
+                     
+                end
+                
+                phase = strfind(topMessageStr, 'PHASE');
+                phase = phase + 5; % Include the word phaes
+                
+                strPhase = topMessageStr(1:phase);
+                strEnd =  topMessageStr(phase: strlength(topMessageStr));
+                
+                strPhaseRect = Screen('TextBounds', render.viewportPtr, strPhase);
+                strPhaseRect = AlignRect(strPhaseRect, normBoundsRect1, 'left', 'top');
+                Screen('DrawText', render.viewportPtr, strPhase, strPhaseRect(RectLeft), strPhaseRect(RectTop), textColor, [0 0 0]);
+
+                strEndRect = Screen('TextBounds', render.viewportPtr, strEnd);
+                strEndRect = AlignRect(strEndRect, normBoundsRect1, 'right', 'top');
+                Screen('DrawText', render.viewportPtr, strEnd, strEndRect(RectLeft), strEndRect(RectTop), [127 127 127], [0 0 0]);
+
+            else
+                
+                Screen('DrawText', render.viewportPtr, topMessageStr, normBoundsRect1(RectLeft), normBoundsRect1(RectTop), [127 127 127], [0 0 0]);
+                
+            end          
+                        
             Screen('TextSize', render.viewportPtr, 127);
             Screen('TextStyle', render.viewportPtr, 0);
             myText = sprintf('%i', mazeNumber);
