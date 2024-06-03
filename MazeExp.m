@@ -177,7 +177,7 @@
         
         [coordPoll, isCompleteFlag, stats] = maze.Explore(render, player, inputDevice, 1000, p.coordPollInterval, p.nowNum, ipClient);
 
-        coordPoll.SaveToFile(p.dataPath, p.participantId, maze.filePrefix, MazeTour.TourHandStr(p.tourHand));
+        coordPoll.SaveToFile(p.dataPath, p.participantId, maze.filePrefix, 'SingleMaze');
         
         if  ipClient.client ~= -1
             
@@ -213,7 +213,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
 
-            standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready for Practice Tour', 'Hit ENTER when ready.');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready', 'Get Ready for Practice Tour');
             
             % Maze tour
             mazeTour = MazeTour(maze.FilePrefix, p.tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
@@ -249,7 +249,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
 
-            standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready For Maze Tour', 'Hit ENTER when ready.');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready.','Get Ready For Maze Tour');
             
             maze.Tour(mazeTour, render, player, inputDevice);
             
@@ -261,7 +261,7 @@
            
         message1Str = 'You may take a short break.';
         message2Str = 'Please stay seated and do not disturb others.';
-        message3Str = 'Hit ENTER to begin next phase.';
+        message3Str = 'Hit SPACE BAR to begin next phase.';
         standby.ShowStandby(render, inputDevice, ipClient, message1Str, message2Str, message3Str);
         
     end
@@ -286,19 +286,13 @@
             mazeFileIndex = schedule.trials(trialIndex, Schedule.COL.MAZE_FILE_INDEX);
             mazeFileName = schedule.mazeFileNames{mazeFileIndex};
             maze = Maze(mazeFileName, p.checkCollisionFlag);
-   
-            % Load Peripheral cues 
-            % render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
- 
-            %standby.ShowStandby(render, inputDevice, ipClient, 'Get Ready for Practice Block', 'Hit ENTER when ready.');
+
             
             count = 3;
             
             % Maze Practice Maze Run
-            if p.pracRun
+            if p.pracRun              
                 
-                
-                 
                 splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions3.jpg', 'Textures', ipClient, Standby);
                 
                 for i = count:-1:1
@@ -350,7 +344,7 @@
         for blockIndex = 1:expSchedule.nBlocks
 
             message1Str = sprintf('Block %i', blockIndex);
-            standby.ShowStandby(render, inputDevice, ipClient, message1Str, 'Hit ENTER when ready.');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready.',  message1Str);
 
             %    -----------------------
             % JOL
@@ -370,7 +364,7 @@
                     % Maze tour
                     if expSchedule.nMazesPerBlock ~= 1
 
-                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Get Ready For Maze Tour:', labelIndex, 'Hit ENTER when ready.', 0, 0);
+                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Hit SPACE BAR when ready.', labelIndex, 'Get Ready For Maze Tour:', 0, 0);
 
                     end
 
@@ -406,11 +400,14 @@
                     
                     if mazeNum == (expSchedule.nMazes / 2) &&  ipClient.client ~= -1
                         
+                        % Big break before continuing experiment
+                        splashScreen.ShowSplashScreen(render, inputDevice, 'Instructions1.jpg', 'Textures');
+                        
                         initCalibration = 0;
                         
                         % Calibrate eyetracker
                         ipClient.Calibrate(render, inputDevice, initCalibration);
-            
+
                     end
 
                     % Load Peripheral cues 
@@ -428,7 +425,7 @@
 
                         % Practice Maze run      
                         %message1Str = sprintf('Get Ready To Run Practice Maze');
-                        %standby.ShowStandby(render, inputDevice, ipClient, message1Str, 'Hit ENTER when ready.');
+                        %standby.ShowStandby(render, inputDevice, ipClient, message1Str, 'Hit SPACE BAR when ready.');
 
                         % Send practice note information to Gazepoint
                         if  ipClient.client ~= -1
@@ -459,7 +456,7 @@
                     end
 
                     % message1Str = sprintf('Get Ready To Run Test Maze');
-                    % standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
+                    % standby.ShowStandby(render, inputDevice, message1Str, 'Hit SPACE BAR when ready.');
 
                     for j = count:-1:1
 
@@ -489,7 +486,7 @@
                             
                     end
                     
-                    coordPoll.SaveToFile(p.dataPath, p.participantId, maze.filePrefix, MazeTour.TourHandStr(p.tourHand));
+                    coordPoll.SaveToFile(p.dataPath, p.participantId, maze.filePrefix, 'user');
 
                     expSchedule.trials(trialIndex, Schedule.COL.IS_COMPLETE) = isCompleteFlag;
                     expSchedule.trials(trialIndex, Schedule.COL.DELTA_TIME) = stats(1);
@@ -504,7 +501,7 @@
                 if mazeNum ~= expSchedule.nBlocks
                     message1Str = 'You may take a short break.';
                     message2Str = 'Please stay seated and do not disturb others.';
-                    message3Str = 'Hit ENTER to begin next block.';
+                    message3Str = 'Hit SPACE BAR to begin next block.';
                     standby.ShowStandby(render, inputDevice, ipClient, message1Str, message2Str, message3Str);
 
                 end

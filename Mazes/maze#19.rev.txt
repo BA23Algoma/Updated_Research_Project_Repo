@@ -29,9 +29,9 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--4.85	5.85	0.05	0.0 ottaman.obj ottaman.jpg
+-4.85	5.85	0.4	0.0 wiskey_barrel.obj wiskey_barrel_BaseColor.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--5.85	1.15	0.1	-90.0 Computer.obj Computer.png
+-5.85	1.15	0.125	-90.0 Computer.obj Computer.png
 //line is listed as width then depth, for the start and end of line
 //first 10 walls are the default 'open' maze
 

@@ -29,7 +29,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--0.15	3.75	0.1	0.0 Tire.obj Tire.png
+-0.25	3.75	0.175	0.0 Tire.obj Tire.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -3.5	2.15	0.1	-90.0 Rudshack.obj Rudshack.png
 //line is listed as width then depth, for the start and end of line

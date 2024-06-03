@@ -47,13 +47,13 @@ classdef GazePoint
                 
                 cali1Str = 'We are going to calibrate eye tracker before starting experiment.';
                 cali2Str = 'Ensure you are in an upright position.';
-                cali3Str = 'Hit ENTER to begin calibration.';
+                cali3Str = 'Hit SPACE BAR to begin calibration.';
                 standby.ShowStandby(render, inputDevice, cali1Str, cali2Str, cali3Str);
                 
             else
                 
                 cali1Str = 'We are going to re-calibrate eye tracker.'; 
-                cali2Str = 'Hit ENTER when ready to begin calibration.';
+                cali2Str = 'Hit SPACE BAR when ready to begin calibration.';
                 standby.ShowStandby(render, inputDevice, cali1Str, cali2Str);
                 
             end
@@ -125,7 +125,7 @@ classdef GazePoint
                     pause(3)
                     
                 else
-                    pause(1);
+                    pause(0.5);
                 end
                 
             end
@@ -147,11 +147,11 @@ classdef GazePoint
      
             if numValid >= 4
                 
-                standby.ShowStandby(render, inputDevice, 'Calibration Successful', 'Hit ENTER to continue experiment' );
+                standby.ShowStandby(render, inputDevice, 'Calibration Successful', 'Hit SPACE BAR to continue experiment' );
                 
             else
                 
-                standby.ShowStandby(render, inputDevice, 'Calibration Unsuccessful', 'Hit ENTER to initialize calibration process' );
+                standby.ShowStandby(render, inputDevice, 'Calibration Unsuccessful', 'Hit SPACE BAR to initialize calibration process' );
                 obj.Calibrate(render, inputDevice, 0)
                 
             end
