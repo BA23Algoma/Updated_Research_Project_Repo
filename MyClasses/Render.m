@@ -353,12 +353,24 @@
             if ~isa(texObjOne, 'GlTexture')
                 
                 error('AddTexture for object one needs a GlTexture object');
+                
             elseif ~isa(texObjTwo, 'GlTexture')
                 
                 error('AddTexture for object two needs a GlTexture object');
             end
             
-            obj.cueTex(1) = glGenTextures(1);
+            if exist(obj.cueTex, 'var')
+            
+                
+                n = 3;
+            
+            else
+                
+                n = 1;
+                
+            end
+            
+            obj.cueTex(n) = glGenTextures(1);
             
             glBindTexture(obj.GL.TEXTURE_2D, obj.cueTex(1));
             glTexImage2D(obj.GL.TEXTURE_2D, 0, obj.GL.RGB, texObjOne.nRows, texObjOne.nCols, 0, obj.GL.RGB, obj.GL.UNSIGNED_BYTE, texObjOne.pixels);
@@ -369,7 +381,7 @@
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_MIN_FILTER,obj.GL.LINEAR);
             glGenerateMipmap(obj.GL.TEXTURE_2D);
             
-            obj.cueTex(2) = glGenTextures(1);
+            obj.cueTex(n + 1) = glGenTextures(1);
              
             glBindTexture(obj.GL.TEXTURE_2D, obj.cueTex(2));
             glTexImage2D(obj.GL.TEXTURE_2D, 0, obj.GL.RGB, texObjTwo.nRows, texObjTwo.nCols, 0, obj.GL.RGB, obj.GL.UNSIGNED_BYTE, texObjTwo.pixels);
@@ -425,25 +437,32 @@
                         
         end
 
-        function obj = loadPerCue(obj, objTexPath, objFile, objTex, objFileTwo, objTexTwo, maze)
+        function obj = loadPerCue(obj, objTexPath, cueProperties)
              % Periperhal Queue
             if obj.perCueFlag
                 % load object
-                obj.cueOneProperties = LoadOBJFileV2(objFile);
-                obj.cueTwoProperties = LoadOBJFileV2(objFileTwo);
+                obj.cueOneProperties = LoadOBJFileV2(cueProperties.obj);
+                obj.cueTwoProperties = LoadOBJFileV2(cueProperties.objTwo);
                 
                 % Load object textures
-                obj = obj.AddTexturePerCue(GlTexture(objTexPath, objTex), GlTexture(objTexPath, objTexTwo));
+                obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.tex), GlTexture(objTexPath, cueProperties.texTwo));
+                
+                if ~isempty(cueProperties.normal) && ~isempty(cueProperties.normalTwo)
+                    
+                     % Load normal textures if they exist
+                     obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.noraml), GlTexture(objTexPath, cueProperties.normalTwo));
+                
+                end
                 
                 % Build the display list
                 obj.displayListOne = glGenLists(1);
                 glNewList(obj.displayListOne, obj.GL.COMPILE);       
-                obj = obj.renderPerCue(obj.cueOneProperties{1}, maze.perCue.x(1), maze.perCue.y(1), maze.perCue.scale(1), maze.perCue.rot(1), obj.cueTex(1));
+                obj = obj.renderPerCue(obj.cueOneProperties{1}, cueProperties.x(1), cueProperties.y(1), cueProperties.scale(1), cueProperties.rot(1), obj.cueTex(1));
                 glEndList;
                 
                 obj.displayListTwo = glGenLists(1);
                 glNewList(obj.displayListTwo, obj.GL.COMPILE);       
-                obj = obj.renderPerCue(obj.cueTwoProperties{1}, maze.perCue.x(2), maze.perCue.y(2), maze.perCue.scale(2), maze.perCue.rot(2), obj.cueTex(2));
+                obj = obj.renderPerCue(obj.cueTwoProperties{1}, cueProperties.x(2), cueProperties.y(2), cueProperties.scale(2), cueProperties.rot(2), obj.cueTex(2));
                 glEndList;
             end
         end

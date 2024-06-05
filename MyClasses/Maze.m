@@ -262,7 +262,7 @@ classdef Maze
             
             fid = fopen(fullfile(obj.pathName, obj.fileName), 'rt');
             fprintf(obj.pathName);
-             fprintf('\n');
+            fprintf('\n');
             fprintf(obj.fileName);
             if (fid ~= -1)
 
@@ -389,6 +389,16 @@ classdef Maze
                  objStrCue = split(objStr);
                  obj.perCue.obj = objStrCue{1};
                  obj.perCue.tex = objStrCue{2};
+                 
+                 if numel(objStrCue) > 2
+                     
+                     obj.perCue.normal = objStrCue{3};
+                     
+                 else
+                     
+                     obj.perCue.normal = [];
+                     
+                 end
 
                  %Peripheral Cue 2
                  fgets(fid); % Skip comment line
@@ -403,6 +413,16 @@ classdef Maze
                  objStrCue = split(objStr);
                  obj.perCue.objTwo = objStrCue{1};
                  obj.perCue.texTwo = objStrCue{2};
+                 
+                 if numel(objStrCue) > 2
+                     
+                     obj.perCue.normalTwo = objStrCue{3};
+                     
+                 else
+                     
+                     obj.perCue.normalTwo = [];
+                     
+                 end
                 
                 fclose(fid);
                 

@@ -163,7 +163,7 @@
         maze = Maze(mazeFileName, p.checkCollisionFlag);
 
         % Load Peripheral cues 
-        render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo, maze);
+        render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
         
         if  ipClient.client ~= -1
             
@@ -211,7 +211,7 @@
             maze = Maze(mazeFileName, p.checkCollisionFlag);
             
             % Load Peripheral cues 
-            render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
+            render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
 
             standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready', 'Get Ready for Practice Tour');
             
@@ -247,7 +247,7 @@
             mazeTour = MazeTour(maze.FilePrefix, tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
 
             % Load Peripheral cues 
-            render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
+            render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
 
             standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready.','Get Ready For Maze Tour');
             
@@ -369,7 +369,7 @@
                     end
 
                     % Load Peripheral cues 
-                    render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo);
+                    render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
                     
                     mazeTour = MazeTour(maze.FilePrefix, p.tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
                     maze.Tour(mazeTour, render, player, inputDevice);
@@ -411,7 +411,7 @@
                     end
 
                     % Load Peripheral cues 
-                    render = render.loadPerCue('Objects\OBJ Textures', maze.perCue.obj, maze.perCue.tex, maze.perCue.objTwo, maze.perCue.texTwo, maze);  
+                    render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);  
                     
                     % if expSchedule.nMazesPerBlock ~= 1
 
