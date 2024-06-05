@@ -359,20 +359,19 @@
                 error('AddTexture for object two needs a GlTexture object');
             end
             
-            if exist(obj.cueTex, 'var')
+            if numel(obj.cueTex) >= 2
             
-                
-                n = 3;
+                n = numel(obj.cueTex) + 1;
             
             else
                 
                 n = 1;
-                
+          
             end
             
             obj.cueTex(n) = glGenTextures(1);
             
-            glBindTexture(obj.GL.TEXTURE_2D, obj.cueTex(1));
+            glBindTexture(obj.GL.TEXTURE_2D, obj.cueTex(n));
             glTexImage2D(obj.GL.TEXTURE_2D, 0, obj.GL.RGB, texObjOne.nRows, texObjOne.nCols, 0, obj.GL.RGB, obj.GL.UNSIGNED_BYTE, texObjOne.pixels);
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_WRAP_S,obj.GL.CLAMP_TO_EDGE);
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_WRAP_T,obj.GL.CLAMP_TO_EDGE);
@@ -383,7 +382,7 @@
             
             obj.cueTex(n + 1) = glGenTextures(1);
              
-            glBindTexture(obj.GL.TEXTURE_2D, obj.cueTex(2));
+            glBindTexture(obj.GL.TEXTURE_2D, obj.cueTex(n + 1));
             glTexImage2D(obj.GL.TEXTURE_2D, 0, obj.GL.RGB, texObjTwo.nRows, texObjTwo.nCols, 0, obj.GL.RGB, obj.GL.UNSIGNED_BYTE, texObjTwo.pixels);
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_WRAP_S,obj.GL.CLAMP_TO_EDGE);
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_WRAP_T,obj.GL.CLAMP_TO_EDGE);
@@ -447,22 +446,27 @@
                 % Load object textures
                 obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.tex), GlTexture(objTexPath, cueProperties.texTwo));
                 
-                if ~isempty(cueProperties.normal) && ~isempty(cueProperties.normalTwo)
+                if isfield(cueProperties,'normal') && isfield(cueProperties,'normalTwo')
                     
                      % Load normal textures if they exist
-                     obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.noraml), GlTexture(objTexPath, cueProperties.normalTwo));
+                     obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.normal), GlTexture(objTexPath, cueProperties.normalTwo));
                 
+                else
+
+                    obj.cueTex(3) = -1;
+                    obj.cueTex(4) = -1;
+                    
                 end
                 
                 % Build the display list
                 obj.displayListOne = glGenLists(1);
                 glNewList(obj.displayListOne, obj.GL.COMPILE);       
-                obj = obj.renderPerCue(obj.cueOneProperties{1}, cueProperties.x(1), cueProperties.y(1), cueProperties.scale(1), cueProperties.rot(1), obj.cueTex(1));
+                obj = obj.renderPerCue(obj.cueOneProperties{1}, cueProperties.x(1), cueProperties.y(1), cueProperties.scale(1), cueProperties.rot(1), obj.cueTex(1), obj.cueTex(3));
                 glEndList;
                 
                 obj.displayListTwo = glGenLists(1);
                 glNewList(obj.displayListTwo, obj.GL.COMPILE);       
-                obj = obj.renderPerCue(obj.cueTwoProperties{1}, cueProperties.x(2), cueProperties.y(2), cueProperties.scale(2), cueProperties.rot(2), obj.cueTex(2));
+                obj = obj.renderPerCue(obj.cueTwoProperties{1}, cueProperties.x(2), cueProperties.y(2), cueProperties.scale(2), cueProperties.rot(2), obj.cueTex(2), obj.cueTex(4));
                 glEndList;
             end
         end
@@ -943,13 +947,21 @@
             
         end
 
-        function obj = renderPerCue(obj, perCue, perCueX, perCueY, perScale, perRot, texID)
+        function obj = renderPerCue(obj, perCue, perCueX, perCueY, perScale, perRot, texID, normID)
 
             glTranslatef(perCueX, 0, perCueY);
             
             glRotatef(perRot, 0, 1, 0);
 
              glBindTexture(obj.GL.TEXTURE_2D, texID)
+             
+             if normID ~= -1
+                 
+                 glActiveTexture(obj.GL.TEXTURE1);
+                 glBindTexture(obj.GL.TEXTURE_2D, normID);
+                 
+             end
+                 
              
              for i = 1:numel(perCue.faces(1,:))
              
