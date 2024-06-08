@@ -29,9 +29,9 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--0.85	1.0	0.1	0.0 TrafficDrum.obj TrafficDrum.jpeg
+-0.85	1.0	0.15	0.0 TrafficDrum.obj TrafficDrum.jpeg
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--2.15	5.85	0.1	0.0 paint_can.obj PaintCan.png
+-2.15	5.85	0.15	0.0 paint_can.obj PaintCan.png
 //line is listed as width then depth, for the start and end of line
 //first 10 walls are the default 'open' maze
 

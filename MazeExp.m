@@ -248,7 +248,7 @@
 
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
-
+ 
             standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready.','Get Ready For Maze Tour');
             
             maze.Tour(mazeTour, render, player, inputDevice);

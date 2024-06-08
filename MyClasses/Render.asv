@@ -29,6 +29,7 @@
         displayListTwo;
         rectOne;
         rectTwo;
+        shaderProgram;
     end
     
     properties (SetAccess = protected)
@@ -190,8 +191,8 @@
             obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_lf.jpg', box, box)));
             obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_up.jpg', box, box)));
             obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_dn.jpg', box, box)));
-            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_bk.jpg', box, box)));
             obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_ft.jpg', box, box)));
+            obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_bk.jpg', box, box)));
             
             % Distal feature (moon)
             if obj.distalCueFlag
@@ -338,6 +339,7 @@
             
             obj.texNumId(texIndex) = glGenTextures(1);
             
+            
             glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(texIndex));
             glTexImage2D(obj.GL.TEXTURE_2D, 0, obj.GL.RGB, texObj.nRows, texObj.nCols, 0, obj.GL.RGB, obj.GL.UNSIGNED_BYTE, texObj.pixels);
             glTexParameterfv(obj.GL.TEXTURE_2D,obj.GL.TEXTURE_WRAP_S,obj.GL.CLAMP_TO_EDGE);
@@ -359,17 +361,14 @@
                 error('AddTexture for object two needs a GlTexture object');
             end
             
-            if isfield(obj,'cueTex')
+            if numel(obj.cueTex) >= 2
             
-               %(disp(obj.cueTex));
                 n = numel(obj.cueTex) + 1;
-            
+                
             else
                 
                 n = 1;
-                obj.cueTex =[];
-                (disp(n));
-                
+          
             end
             
             obj.cueTex(n) = glGenTextures(1);
@@ -449,18 +448,33 @@
                 % Load object textures
                 obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.tex), GlTexture(objTexPath, cueProperties.texTwo));
                 
-                if isfield(cueProperties,'normal') && isfield(cueProperties,'normalTwo')
+                if isfield(cueProperties, 'normal') && isfield(cueProperties, 'normalTwo')
                     
-                     % Load normal textures if they exist
+                     % Load normal textures
                      obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.normal), GlTexture(objTexPath, cueProperties.normalTwo));
-                
-                else
+                     
+                     shaderpath = 'Objects/Shaders/';
+                     obj.shaderProgram = LoadGLSLProgramFromFiles([shaderpath 'object_shader'],1); 
 
+                     gluErrorString
+
+                     % Activate program:
+                     glUseProgram(obj.shaderProgram);
+
+                     colorTextureLoc = glGetUniformLocation(obj.shaderProgram, 'colorTexture');
+                     normalMapLoc = glGetUniformLocation(obj.shaderProgram, 'normalMap');
+                     glUniform1i(colorTextureLoc, 0); % Texture unit 0 for color texture
+                     glUniform1i(normalMapLoc, 1); % Texture unit 1 for normal map
+                    
+                     % Disable shaders:
+                     glUseProgram(0);
+                     
+                else
+                    
                     obj.cueTex(3) = -1;
                     obj.cueTex(4) = -1;
-                    
                 end
-                
+                    
                 % Build the display list
                 obj.displayListOne = glGenLists(1);
                 glNewList(obj.displayListOne, obj.GL.COMPILE);       
@@ -594,8 +608,18 @@
                 glTexCoord2f(1, 0.0); glVertex3f(-l, -l/2, l);
                 glEnd;
 
-                % Back sky wall
+                 % Front sky wall
                 glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(9));
+                glBegin(obj.GL.QUADS);
+                glTexCoord2f(0.0, 0.0); glVertex3f(l, -l/2, -l);  
+                glTexCoord2f(0.0, 1); glVertex3f(l, l/2, -l);
+
+                glTexCoord2f(1, 1); glVertex3f(l, l/2, l);     
+                glTexCoord2f(1, 0.0); glVertex3f(l, -l/2, l);
+                glEnd;
+                
+                % Back sky wall
+                glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(10));
                 glBegin(obj.GL.QUADS);
                 glTexCoord2f(0.0, 0.0); glVertex3f(-l, -l/2, l);  
                 glTexCoord2f(0.0, 1); glVertex3f(-l, l/2, l);
@@ -604,15 +628,7 @@
                 glTexCoord2f(1, 0.0); glVertex3f(-l, -l/2, -l);
                 glEnd;
 
-                 % Front sky wall
-                glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(10));
-                glBegin(obj.GL.QUADS);
-                glTexCoord2f(0.0, 0.0); glVertex3f(l, -l/2, -l);  
-                glTexCoord2f(0.0, 1); glVertex3f(l, l/2, -l);
-
-                glTexCoord2f(1, 1); glVertex3f(l, l/2, l);     
-                glTexCoord2f(1, 0.0); glVertex3f(l, -l/2, l);
-                glEnd;
+                
                                                              
             end
             
@@ -825,12 +841,13 @@
                     % Set whether to draw bounding boxes for objects
                     drawBox = false;
 
-                    %----------------------------------Proximal QUE------------------------------------------------%
+                    %----------------------------------Proximal QUE 1------------------------------------------------%
 
                      glPushMatrix;
-
+                         
                      % Run call list code to render object
                      glCallList(obj.displayListOne);
+                        
                      
                      %------------BoundedBox Setup----------------
                      boundingBoxOne = boundBoxInitialize(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
@@ -847,6 +864,7 @@
                       
                      glPopMatrix;
 
+                      %----------------------------------Proximal QUE 2------------------------------------------------%
                      glPushMatrix;
  
                      glCallList(obj.displayListTwo);
@@ -955,17 +973,22 @@
             glTranslatef(perCueX, 0, perCueY);
             
             glRotatef(perRot, 0, 1, 0);
-
-             glBindTexture(obj.GL.TEXTURE_2D, texID)
-             
-             if normID ~= -1
-                 
-                 glActiveTexture(obj.GL.TEXTURE1);
-                 glBindTexture(obj.GL.TEXTURE_2D, texID);
-                 
-             end
-                 
-             
+            
+            glBindTexture(obj.GL.TEXTURE_2D, texID);
+            
+            normal = 0;
+            
+            if normID ~= -1
+                disp('working');
+                normal = 1;
+                glActiveTexture(obj.GL.TEXTURE1);
+                glBindTexture(obj.GL.TEXTURE_2D, normID);
+                glActiveTexture(obj.GL.TEXTURE0);
+                disp(obj.GL.TEXTURE1);
+                %glTexEnvfv(obj.GL.TEXTURE_ENV,obj.GL.TEXTURE_ENV_MODE,obj.GL.MODULATE);
+                
+            end
+            
              for i = 1:numel(perCue.faces(1,:))
              
                  if numel(perCue.faces(:, 1)) == 3
@@ -999,6 +1022,12 @@
                     end
                  end
                  glEnd();
+             end
+             
+             if normal
+                 
+                 %glDisable(obj.GL.TEXTURE1);
+                 
              end
 
         end

@@ -32,7 +32,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -0.40	5.85	0.075	90.0 tanker.obj tanker_BaseColor.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--5.85	0.15	0.1	0.0 Mailbox.obj Mailbox.png
+-5.85	0.25	0.175	0.0 noticeBoard.obj noticeBoard.png
 //line is listed as width then depth, for the start and end of line
 //first 10 walls are the default 'open' maze
 

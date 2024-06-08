@@ -31,9 +31,9 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--2.0	3.25	0.1	90.0 Firstaid.obj FirstAid.png
+-2.0	3.25	0.15	90.0 Firstaid.obj FirstAid.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--3.85	1.85	0.1	0.0 ParkingMeter.obj ParkingMeter.png
+-3.85	1.80	0.35	135.0 vacuum.obj vacuum.png
 //line is listed as width then depth, for the start and end of line
 //first 10 walls are the default 'open' maze
 

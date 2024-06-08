@@ -32,8 +32,8 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--1.15	2.15	0.15	-90.0 vending.obj vending.png
+-1.15	2.15	0.175	-90.0 vending.obj vending.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--5.85	4.85	0.1	0.0 CanStew.obj CanStew.png
+-5.85	4.85	0.25	0.0 sink.obj sink.png
 //line is listed as width then depth, for the start and end of line
 //first 10 walls are the default 'open' maze

@@ -30,9 +30,9 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--3.75	4.75	0.1	90.0 Traffic_barrier.obj Traffic_barrier.png
+-3.75	4.75	0.15	90.0 Traffic_barrier.obj Traffic_barrier.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--0.25	2.75	0.003	0.0 fire_hydrantV2.obj fire_hydrant.png
+-0.25	2.75	0.004	0.0 fire_hydrantV2.obj fire_hydrant.png
 //line is listed as width then depth, for the start and end of line
 //first 10 walls are the default 'open' maze
 
