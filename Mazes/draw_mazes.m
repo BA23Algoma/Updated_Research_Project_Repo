@@ -9,7 +9,7 @@ for i = 1:9
     
     nexttile;
     title(mazeTitle);
-    Draw(mazeLayout);
+    Draw(mazeLayout, 0);
     axis off;
 end
 
@@ -22,6 +22,6 @@ for i = 10:20
     
     nexttile;
     title(mazeTitle);
-    Draw(mazeLayout);
+    Draw(mazeLayout, 0);
     axis off;
 end

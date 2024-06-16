@@ -7,7 +7,7 @@ classdef Keyboard < InputDevice
         upArrowCode;
         downArrowCode;
         escapeCode;
-        spaceCode; % Previously used sapce bar
+        spaceCode; % Previously used space bar
         enterCode;
         printScreen;
         skipEventCode;
@@ -32,6 +32,9 @@ classdef Keyboard < InputDevice
             end
             
 %             KbName('UnifyKeyNames');
+            % Stop keyboard from affect command window
+            ListenChar(2);
+            
             
             if ispc
                 
@@ -42,7 +45,7 @@ classdef Keyboard < InputDevice
                 obj.escapeCode      = 27;
                 obj.spaceCode       = 32;
                 obj.enterCode       = 13;
-                obj.printScreen     = 80; % keycode p
+                obj.printScreen     = 80; % key code p
                 obj.skipEventCode   = 83; % key code s
                 obj.calibrate       = 67; % key code c
                 
@@ -68,7 +71,7 @@ classdef Keyboard < InputDevice
             
             if keyIsDown
                                     
-                if keyCode(obj.spaceCode)
+                if keyCode(obj.enterCode)
                     
                     goFlag = 1;
                     
@@ -110,7 +113,7 @@ classdef Keyboard < InputDevice
                     
                     xPosDelta = 1;
                     
-                elseif keyCode(obj.spaceCode)
+                elseif keyCode(obj.enterCode)
                     
                     decisionFlag = 1;
                     

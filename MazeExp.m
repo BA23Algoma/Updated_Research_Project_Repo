@@ -17,10 +17,10 @@
     
      
     
-     %    p.eyeLevel                      = -0.55;
+    %    p.eyeLevel                      = -0.55;
     %     p.coo rdPollInterval            = 0.1; 
     %     p.coordPollTimeLimit            = 240;
-     %    p.praticePollTimeLimit          = 60;
+    %    p.praticePollTimeLimit          = 60;
     %     p.cue                           = 1; % Proximal
     %     p.gazePoint                     = 0;
  
@@ -168,7 +168,7 @@
         if  ipClient.client ~= -1
             
             %initialize maze to send client values
-            strGP = strcat('Beginning of,', mazeFileName);
+            strGP = strcat('Beginning of', strcat(' ',mazeFileName));
             ipClient.Log(strGP);
             
         end
@@ -181,7 +181,7 @@
         
         if  ipClient.client ~= -1
             
-            strGPEnd = strcat('End of,', mazeFileName);
+            strGPEnd = strcat('End of', strcat(' ', mazeFileName));
             ipClient.Log(strGPEnd);
             
         end
@@ -213,7 +213,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
 
-            standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready', 'Get Ready for Practice Tour');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Hit ENTER when ready', 'Get Ready for Practice Tour');
             
             % Maze tour
             mazeTour = MazeTour(maze.FilePrefix, p.tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
@@ -249,7 +249,7 @@
             % Load Peripheral cues 
             render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
  
-            standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready.','Get Ready For Maze Tour');
+            standby.ShowStandby(render, inputDevice, ipClient, 'Hit ENTER when ready.','Get Ready For Maze Tour');
             
             maze.Tour(mazeTour, render, player, inputDevice);
             
@@ -261,7 +261,7 @@
            
         message1Str = 'You may take a short break.';
         message2Str = 'Please stay seated and do not disturb others.';
-        message3Str = 'Hit SPACE BAR to begin next phase.';
+        message3Str = 'Hit ENTER to begin next phase.';
         standby.ShowStandby(render, inputDevice, ipClient, message1Str, message2Str, message3Str);
         
     end
@@ -275,10 +275,10 @@
     
     if p.blockPracticeFlag
         
-        splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions1.jpg', 'Textures');
+        splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions1.jpg', 'Textures');
         
         schedule = Schedule(p.participantId, 'PRACTICE', p.nPracticeTrials, p.tourHand);
-        splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions2.jpg', 'Textures', ipClient, Standby);
+        splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions2.jpg', 'Textures', ipClient, Standby);
         
         for trialIndex = 1:schedule.nTrials
             
@@ -293,7 +293,7 @@
             % Maze Practice Maze Run
             if p.pracRun              
                 
-                splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions3.jpg', 'Textures', ipClient, Standby);
+                splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions3.jpg', 'Textures', ipClient, Standby);
                 
                 for i = count:-1:1
 
@@ -309,7 +309,7 @@
             
             % Maze run 
             
-            splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions4.jpg', 'Textures', ipClient, Standby);
+            splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions4.jpg', 'Textures', ipClient, Standby);
 
                             
             for j = count:-1:1
@@ -326,7 +326,7 @@
         
     elseif ~p.singleMaze
         
-         splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions1.jpg', 'Textures');
+         splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions1.jpg', 'Textures');
          
     end
     
@@ -339,12 +339,12 @@
     
     if ~p.singleMaze
         
-         splashScreen.ShowSplashScreen(render, inputDevice, 'ExpInstructions5.jpg', 'Textures');
+         splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions5.jpg', 'Textures');
     
         for blockIndex = 1:expSchedule.nBlocks
 
             message1Str = sprintf('Block %i', blockIndex);
-            standby.ShowStandby(render, inputDevice, ipClient, 'Hit SPACE BAR when ready.',  message1Str);
+            standby.ShowStandby(render, inputDevice, ipClient, 'Hit ENTER when ready.',  message1Str);
 
             %    -----------------------
             % JOL
@@ -364,7 +364,7 @@
                     % Maze tour
                     if expSchedule.nMazesPerBlock ~= 1
 
-                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Hit SPACE BAR when ready.', labelIndex, 'Get Ready For Maze Tour:', 0, 0);
+                        standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'Hit ENTER when ready.', labelIndex, 'Get Ready For Maze Tour:', 0, 0);
 
                     end
 
@@ -401,7 +401,7 @@
                     if mazeNum == (expSchedule.nMazes / 2) &&  ipClient.client ~= -1
                         
                         % Big break before continuing experiment
-                        splashScreen.ShowSplashScreen(render, inputDevice, 'Instructions1.jpg', 'Textures');
+                        % splashScreen.ShowSplashScreen(render, inputDevice, 'Instructions1.jpg', 'Textures');
                         
                         initCalibration = 0;
                         
@@ -425,12 +425,12 @@
 
                         % Practice Maze run      
                         %message1Str = sprintf('Get Ready To Run Practice Maze');
-                        %standby.ShowStandby(render, inputDevice, ipClient, message1Str, 'Hit SPACE BAR when ready.');
+                        %standby.ShowStandby(render, inputDevice, ipClient, message1Str, 'Hit ENTER when ready.');
 
                         % Send practice note information to Gazepoint
                         if  ipClient.client ~= -1
                             
-                            strGP = strcat('Start Practice ,', mazeFileName);
+                            strGP = strcat('Start Practice Trial');
                             ipClient.Log(strGP);
                             
                         end
@@ -448,7 +448,7 @@
                         if  ipClient.client ~= -1
  
                             % Notify end of run to gazepoint
-                            strGP = strcat('End Practice ,', mazeFileName);
+                            strGP = ('End Practice trial');
                             ipClient.Log(strGP);
                              
                         end
@@ -456,7 +456,7 @@
                     end
 
                     % message1Str = sprintf('Get Ready To Run Test Maze');
-                    % standby.ShowStandby(render, inputDevice, message1Str, 'Hit SPACE BAR when ready.');
+                    % standby.ShowStandby(render, inputDevice, message1Str, 'Hit ENTER when ready.');
 
                     for j = count:-1:1
 
@@ -467,12 +467,12 @@
                     % Send experiment start note information to Gazepoint
                     if  ipClient.client ~= -1
                             
-                        strGP = strcat('Start Experiment for,', num2str(mazeNum), ',', mazeFileName);
-                           strCue = strcat(maze.perCue.obj,',,,,,,', maze.perCue.objTwo);
+                        strGP = strcat('Start Experiment Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
+                        strCue = strcat('Object cues: ', strcat(' ',maze.perCue.obj),' &', strcat(' ',maze.perCue.objTwo));
                         ipClient.Log(strGP);
-                        WaitSecs(0.25);
-                         ipClient.Log(strCue);
-                        WaitSecs(0.25);  
+                        WaitSecs(0.1);
+                        ipClient.Log(strCue);
+                        WaitSecs(0.1);  
                             
                     end
 
@@ -481,7 +481,7 @@
                     % Send experiment end note information to Gazepoint
                     if  ipClient.client ~= -1
                             
-                        strGP = strcat('End Experiment ,', mazeFileName);
+                        strGP = strcat('End Experiment ', mazeFileName);
                         ipClient.Log(strGP);
                             
                     end
@@ -501,7 +501,7 @@
                 if mazeNum ~= expSchedule.nBlocks
                     message1Str = 'You may take a short break.';
                     message2Str = 'Please stay seated and do not disturb others.';
-                    message3Str = 'Hit SPACE BAR to begin next block.';
+                    message3Str = 'Hit ENTER to begin next block.';
                     standby.ShowStandby(render, inputDevice, ipClient, message1Str, message2Str, message3Str);
 
                 end

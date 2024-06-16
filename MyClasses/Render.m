@@ -21,7 +21,7 @@
         DistalCueName;
         DistalCueTarget;
         distalCueLocation;
-        perCueFlag         = 0;
+        perCueFlag          = 0;
         cueOneProperties;
         cueTwoProperties;
         cueTex;
@@ -30,6 +30,7 @@
         rectOne;
         rectTwo;
         shaderProgram;
+        minReq              = 0.001; % Min intersect to be viewable
     end
     
     properties (SetAccess = protected)
@@ -110,22 +111,20 @@
             Screen('Preference','VisualDebugLevel', 0);
             Screen('Preference', 'Verbosity', 0);
             
-            %*****Banki edit for screen selection
             % Get the screen numbers. This gives us a number for each of the screens
             % attached to our computer.
             screensCheck = Screen('Screens');
-
+            
             % To draw we select the maximum of these numbers. So in a situation where we
             % have two screens attached to our monitor we will draw to the external
             % screen.
             screenNumber = max(screensCheck);
-            %obj.screenId = screenNumber;
             obj.screenId = screenNumber;
             
             % Encapsulate and protect AGL, GL, and GLU constants
             
-            %eval('agl = AGL;');
-            %obj.AGL = agl;
+            % eval('agl = AGL;');
+            % obj.AGL = agl;
             eval('gl = GL;');
             obj.GL = gl;
             eval('glul = GLU;');
@@ -360,7 +359,7 @@
                 
                 error('AddTexture for object two needs a GlTexture object');
             end
-            
+            %{
             if numel(obj.cueTex) >= 2
             
                 n = numel(obj.cueTex) + 1;
@@ -370,6 +369,8 @@
                 n = 1;
           
             end
+            %}
+            n = 1;
             
             obj.cueTex(n) = glGenTextures(1);
             
@@ -448,6 +449,8 @@
                 % Load object textures
                 obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.tex), GlTexture(objTexPath, cueProperties.texTwo));
                 
+                % Potential future incorporations of normal textures
+                %{
                 if isfield(cueProperties, 'normal') && isfield(cueProperties, 'normalTwo')
                     
                      % Load normal textures
@@ -471,16 +474,17 @@
                     obj.cueTex(3) = -1;
                     obj.cueTex(4) = -1;
                 end
-                    
+                %}
+                
                 % Build the display list
                 obj.displayListOne = glGenLists(1);
                 glNewList(obj.displayListOne, obj.GL.COMPILE);       
-                obj = obj.renderPerCue(obj.cueOneProperties{1}, cueProperties.x(1), cueProperties.y(1), cueProperties.scale(1), cueProperties.rot(1), obj.cueTex(1), obj.cueTex(3));
+                obj = obj.renderPerCue(obj.cueOneProperties{1}, cueProperties.x(1), cueProperties.y(1), cueProperties.scale(1), cueProperties.rot(1), obj.cueTex(1));
                 glEndList;
                 
                 obj.displayListTwo = glGenLists(1);
                 glNewList(obj.displayListTwo, obj.GL.COMPILE);       
-                obj = obj.renderPerCue(obj.cueTwoProperties{1}, cueProperties.x(2), cueProperties.y(2), cueProperties.scale(2), cueProperties.rot(2), obj.cueTex(2), obj.cueTex(4));
+                obj = obj.renderPerCue(obj.cueTwoProperties{1}, cueProperties.x(2), cueProperties.y(2), cueProperties.scale(2), cueProperties.rot(2), obj.cueTex(2));
                 glEndList;
             end
         end
@@ -685,7 +689,10 @@
                 % Number of slices that we wil use on our sphere (higher gives a smoother
                 % surface)
                 numSlices = 1000;
-
+                
+                % Sphere height
+                height = 6;
+                
                 % Enable the loaded model texture
                 glEnable(obj.DistalCueTarget);
 
@@ -694,7 +701,7 @@
 
                  % Translate the sphere to the desired location
                 location = obj.distalCueLocation;
-                glTranslatef(maze.distalCue.x(location), 6, maze.distalCue.y(location));
+                glTranslatef(maze.distalCue.x(location), height, maze.distalCue.y(location));
 
                 %Draw Distall Queue
                 glBindTexture(obj.DistalCueTarget, obj.DistalCueName);
@@ -706,19 +713,19 @@
                 % Restore the transformation state
                 glPopMatrix;
                 
-                sphereCenter = [maze.distalCue.x(location), 3, maze.distalCue.y(location)];
+                sphereCenter = [maze.distalCue.x(location), height, maze.distalCue.y(location)];
                 
                 %Building bounding box for distal queue to record screen
                 %coordinates
                 box = [
-                    sphereCenter(1)-sphereRadius, 3+sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)+sphereRadius, 3+sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)-sphereRadius, 3+sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)+sphereRadius, 3+sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)-sphereRadius, 3-sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)+sphereRadius, 3-sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)-sphereRadius, 3-sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)+sphereRadius, 3-sphereRadius, sphereCenter(3)-sphereRadius
+                    sphereCenter(1)-sphereRadius, height+sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)+sphereRadius, height+sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)-sphereRadius, height+sphereRadius, sphereCenter(3)-sphereRadius;
+                    sphereCenter(1)+sphereRadius, height+sphereRadius, sphereCenter(3)-sphereRadius;
+                    sphereCenter(1)-sphereRadius, height-sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)+sphereRadius, height-sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)-sphereRadius, height-sphereRadius, sphereCenter(3)-sphereRadius;
+                    sphereCenter(1)+sphereRadius, height-sphereRadius, sphereCenter(3)-sphereRadius
                     ]';
                 
                 X = zeros(1,8);
@@ -728,7 +735,7 @@
                 viewport = glGetIntegerv(obj.GL.VIEWPORT);
                 modelView = glGetDoublev(obj.GL.MODELVIEW_MATRIX);
                 projectionView = glGetDoublev(obj.GL.PROJECTION_MATRIX);
-            
+                 
                 for i = 1:size(box, 2)
                  
                  [X(i), Y(i), Z(i)] = gluProject(box(1,i), box(2,i), box(3,i),...
@@ -743,7 +750,7 @@
                  xMax = max(X);
                  yMax = max(Y);
                  zMin = min(Z);
-
+                 
                 % Adjust Y to match OpenGL coordinate system
                 yMin = double(viewport(4)) - yMin;
                 yMax = double(viewport(4)) - yMax;
@@ -757,24 +764,22 @@
                 tempyMin = yMin;
                 yMin = yMax / double(viewport(4));
                 yMax = tempyMin / double(viewport(4));
-                
+            
                 % Check if queue is on screen (viewable)
                 onScreen = false;
 
                 xDif = xMax - xMin;
                 yDif = yMax - yMin;
 
-                queueRect = [xMin yMin xDif yDif];
+                queueRect = [xMin xMax xDif yDif];
+                
                 screenRect = [0 0 1.0 1.0];
                                 
                 intersect = rectint(queueRect, screenRect);
-                                
-                % Min  percentage required intersect to be considered viewable
-                minReq = 0.2;
                 
-                minVisibility = (xDif * yDif * minReq);
+                minVisibility = (xDif * yDif * obj.minReq);
                 
-                if minVisibility < intersect && intersect < 1 && zMin < 1
+                if minVisibility < intersect && intersect <= 1 && zMin < 1
                     
                     onScreen = true;
                     
@@ -783,45 +788,29 @@
 %                  [collisionFlag, ~] = maze.CollisionCheck(player);
 %                  
 %                  if collisionFlag == 1
-%                      fprintf('It actually works!!!!!!\n');
+%                      fprintf('Collision\n');
 %                  end
 %               
-                names = {
-                    'XMin', 'XMax','YMin', 'YMax',...
-                    'CueOneXMin', 'CueOneXMax'...
-                    'CueOneYMin', 'CueOneYMax'...
-                    'CueTwoXMin', 'CueTwoXMax'...
-                    'CueTwoYMin', 'CueTwoYMax'...
-                    'DistalXMin', 'DistalXMax'...
-                    'DistalYMin', 'DistalYMax'...
-                    };
-                    
-                for index = 1:numel(names)
-                    gazePointSTR.(names{index}) = '';
-                end
                 
-                gazePointSTR.XMin = ' X_Min ';
-                gazePointSTR.XMax = ' X_Max ';
-                gazePointSTR.YMin = ' Y_Min ';
-                gazePointSTR.YMax = ' Y_Max ';
                 
-                gap = '';
                 
                 if ipClient.client ~= -1
                     
+                    gap = '0;';
+                        
                     if onScreen
                         
-                        gazePointSTR.DistalXMax =  num2str(xMin);
-                        gazePointSTR.DistalXMax = num2str(xMax);
-                        gazePointSTR.DistalYMin = num2str(yMin);
-                        gazePointSTR.DistalYMax =  num2str(yMax);
-
+                        ipClient.gazePointSTR.DistalXMin =  strcat(num2str(xMin),';');
+                        ipClient.gazePointSTR.DistalXMax =  strcat(num2str(xMax),';');
+                        ipClient.gazePointSTR.DistalYMin =  strcat(num2str(yMin),';');
+                        ipClient.gazePointSTR.DistalYMax =   strcat(num2str(yMax),';');      
+                        
                     else
                         
-                        gazePointSTR.DistalXMin = gap;
-                        gazePointSTR.DistalXMax = gap;
-                        gazePointSTR.DistalYMin = gap;
-                        gazePointSTR.DistalYMax = gap;
+                        ipClient.gazePointSTR.DistalXMin = gap;
+                        ipClient.gazePointSTR.DistalXMax = gap;
+                        ipClient.gazePointSTR.DistalYMin = gap;
+                        ipClient.gazePointSTR.DistalYMax = gap;
 
                     end
                 end
@@ -832,12 +821,13 @@
                 
                 if ~(strcmp(maze.perCue.obj,'NA'))
                     
-                    % Min  percentage required intersect to be considered viewable
-                    minReq = 0.2;
-                    
                     % Set whether to draw bounding boxes for objects
                     drawBox = false;
-
+                    
+                    visible = [0 0];
+                    
+                    minMaxLimits = zeros(2,5);
+                    
                     %----------------------------------Proximal QUE 1------------------------------------------------%
 
                      glPushMatrix;
@@ -845,34 +835,39 @@
                      % Run call list code to render object
                      glCallList(obj.displayListOne);
                         
-                     
                      %------------BoundedBox Setup----------------
-                     boundingBoxOne = boundBoxInitialize(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
+                     [boundingBoxOne, minMax] = boundBoxInitialize(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
                      
                      % Check if bounding box is on screen 
-                     [onScreen, minMax] = IsBoundingBoxVisible(obj, boundingBoxOne, maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, minReq); 
-
+                     [onScreen, ~] = IsBoundingBoxVisible(obj, 'Sign', maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, obj.minReq, minMax); 
+                     
+                     minMaxLimits(1, :) = minMax;
+                     visible(1) = onScreen;
+                     
                      if drawBox == true
                           
                          glColor3f(1, 0, 0);
                          obj = obj.drawBoundingBox(boundingBoxOne);
-                          
+                         
                      end
                       
                      glPopMatrix;
 
                       %----------------------------------Proximal QUE 2------------------------------------------------%
+                      
                      glPushMatrix;
  
                      glCallList(obj.displayListTwo);
 
                      %------------BoundedBox Setup----------------
-                     boundingBoxTwo = boundBoxInitialize(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
+                     [boundingBoxTwo, minMaxTwo] = boundBoxInitialize(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
 
 
                      % Check if bounding box is on screen 
-                     [onScreenTwo, minMaxTwo] = IsBoundingBoxVisible(obj, boundingBoxTwo, maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, minReq); 
-
+                     [onScreenTwo, ~] = IsBoundingBoxVisible(obj, 'Gas Container', maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, obj.minReq, minMaxTwo); 
+                     
+                     minMaxLimits(2, :) = minMaxTwo;
+                     visible(2) = onScreenTwo;
                       
                       % Draw bounding box
                       if drawBox == true
@@ -884,37 +879,36 @@
                       
                      glPopMatrix;
                      
+                     % Fill values retrevied boundingbox visible function
                      if ipClient.client ~= -1 
+                         
+                      gap = '0;';
+                      
+                      names = ipClient.names(5:12);
+                      names = reshape(names, [4,2]);
+                      
+                      for cue = 1:numel(visible)
+                              
+                          if visible(cue)
 
-                      if onScreen
+                              for index = 1:numel(names(:, 1))
 
-                          gazePointSTR.CueOneXMin =  num2str(minMax(1));
-                          gazePointSTR.CueOneXMax = num2str(minMax(2));
-                          gazePointSTR.CueOneYMin = num2str(minMax(3));
-                          gazePointSTR.CueOneYMax =  num2str(minMax(4));
+                                  ipClient.gazePointSTR.(names{index , cue}) =  strcat(num2str(minMaxLimits(cue, index)), ';');
+                                  
+                              end
+                              
+                          else
+                              
+                              for index = 1:numel(names(:, 1))
 
-                      else
-                          gazePointSTR.CueOneXMin = gap;
-                          gazePointSTR.CueOneXMax = gap;
-                          gazePointSTR.CueOneYMin = gap;
-                          gazePointSTR.CueOneYMax = gap;
-
+                                  ipClient.gazePointSTR.(names{index , cue}) =  gap;
+                                  
+                              end
+                              
+                          end
+                          
                       end
-
-                      if onScreenTwo
-
-                          gazePointSTR.CueTwoXMin =  num2str(minMaxTwo(1));
-                          gazePointSTR.CueOneXMax = num2str(minMaxTwo(2));
-                          gazePointSTR.CueTwoYMin = num2str(minMaxTwo(3));
-                          gazePointSTR.CueTwoYMax =  num2str(minMaxTwo(4));
-                      else
-                          gazePointSTR.CueTwoXMin = gap;
-                          gazePointSTR.CueTwoXMax = gap;
-                          gazePointSTR.CueTwoYMin = gap;
-                          gazePointSTR.CueTwoYMax = gap;
-
-                      end
-                  
+                      
                      end
                  
                 end
@@ -924,21 +918,23 @@
             % Send to gazepoint if running eyetracker
               if ipClient.client ~= -1 
 
-                  strLog = strcat(...
-                      gazePointSTR.XMin, gazePointSTR.CueOneXMin,...
-                      gazePointSTR.XMax, gazePointSTR.CueOneXMax,...
-                      gazePointSTR.YMin, gazePointSTR.CueOneYMin,...
-                      gazePointSTR.YMax, gazePointSTR.CueOneYMax,...
-                      gazePointSTR.XMin, gazePointSTR.CueTwoXMin,...
-                      gazePointSTR.XMax, gazePointSTR.CueTwoXMax,...
-                      gazePointSTR.YMin, gazePointSTR.CueTwoYMin,...
-                      gazePointSTR.YMax, gazePointSTR.CueTwoYMax,...
-                      gazePointSTR.XMin, gazePointSTR.DistalXMin,...
-                      gazePointSTR.XMax, gazePointSTR.DistalXMax,...
-                      gazePointSTR.YMin, gazePointSTR.DistalYMin,...
-                      gazePointSTR.YMax, gazePointSTR.DistalYMax...
-                      );
+                  gpStr = ipClient.gazePointSTR;
                   
+                  strLog = strcat(...
+                      gpStr.XMin, gpStr.CueOneXMin,...
+                      gpStr.XMax, gpStr.CueOneXMax,...
+                      gpStr.YMin, gpStr.CueOneYMin,...
+                      gpStr.YMax, gpStr.CueOneYMax,...
+                      gpStr.XMin, gpStr.CueTwoXMin,...
+                      gpStr.XMax, gpStr.CueTwoXMax,...
+                      gpStr.YMin, gpStr.CueTwoYMin,...
+                      gpStr.YMax, gpStr.CueTwoYMax,...
+                      gpStr.XMin, gpStr.DistalXMin,...
+                      gpStr.XMax, gpStr.DistalXMax,...
+                      gpStr.YMin, gpStr.DistalYMin,...
+                      gpStr.YMax, gpStr.DistalYMax...
+                      );
+                 
                       ipClient.Log(strLog);
 
               end
@@ -965,7 +961,7 @@
             
         end
 
-        function obj = renderPerCue(obj, perCue, perCueX, perCueY, perScale, perRot, texID, normID)
+        function obj = renderPerCue(obj, perCue, perCueX, perCueY, perScale, perRot, texID)
 
             glTranslatef(perCueX, 0, perCueY);
             
@@ -973,19 +969,18 @@
             
             glBindTexture(obj.GL.TEXTURE_2D, texID);
             
-            normal = 0;
-            
+            % Binding of normal textures using shaders
+            %{
             if normID ~= -1
-                disp('working');
+                
                 normal = 1;
                 glActiveTexture(obj.GL.TEXTURE1);
                 glBindTexture(obj.GL.TEXTURE_2D, normID);
+                glTexEnvfv(obj.GL.TEXTURE_ENV,obj.GL.TEXTURE_ENV_MODE,obj.GL.MODULATE);
                 glActiveTexture(obj.GL.TEXTURE0);
-                disp(obj.GL.TEXTURE1);
-                %glTexEnvfv(obj.GL.TEXTURE_ENV,obj.GL.TEXTURE_ENV_MODE,obj.GL.MODULATE);
-               
-                     
+                
             end
+            %}
             
              for i = 1:numel(perCue.faces(1,:))
              
@@ -1022,15 +1017,15 @@
                  glEnd();
              end
              
-             if normal
+             % if normal
                  
-                 %glDisable(obj.GL.TEXTURE1);
+%                 glDisable(obj.GL.TEXTURE1);
                  
-             end
+             % end
 
         end
 
-        function [BoundingBox] = boundBoxInitialize(~, Cue, scale)
+        function [BoundingBox, minMax] = boundBoxInitialize(obj, Cue, scale)
             
             % Accumulate translation
             % Initialize local transformation matrix as an identity matrix
@@ -1062,28 +1057,26 @@
             
             BoundingBox = boundingBox;
             
-        end
-        
-        function [onScreen, minMax] = IsBoundingBoxVisible(obj, boundingBox, normalWalls, xCueLocation, yCueLocation, player, minReq)
-            
             % Retrieve matrix values
             modelViewMatrix = glGetDoublev(obj.GL.MODELVIEW_MATRIX);
             projectionMatrix2D = glGetDoublev(obj.GL.PROJECTION_MATRIX);
             viewport = glGetIntegerv(obj.GL.VIEWPORT);
             
             % Initalize matrices to zero
-            X = zeros(1,8);
-            Y = zeros(1,8);
-            Z = zeros(1,8);
+            X = zeros(1,size(boundingBox, 2));
+            Y = zeros(1,size(boundingBox, 2));
+            Z = zeros(1,size(boundingBox, 2));
+            
+            
             
             % Find (X,Y, Z) projected coordinates of bounding box vertices
              for i = 1:size(boundingBox, 2)
                  
                  [X(i), Y(i), Z(i)] = gluProject(boundingBox(1,i), boundingBox(2,i), boundingBox(3,i),...
                      modelViewMatrix, projectionMatrix2D, viewport);
-             
+                
              end
-            
+             
              % Find max and min values
              xMin = min(X);
              yMin = min(Y);
@@ -1096,7 +1089,7 @@
             yMax = double(viewport(4)) - yMax;
             
             % Normailize values for gazepoint ((0,0) Top left, (1,1) Bottom
-            % right)
+            % right)            
             xMin = xMin / double(viewport(3));
             xMax = xMax / double(viewport(3));
             
@@ -1105,10 +1098,26 @@
             yMin = yMax / double(viewport(4));
             yMax = tempyMin / double(viewport(4));
             
+            minMax = [xMin xMax yMin yMax zMax];
+            %disp(minMax);  
+            
+        end
+        
+        function [onScreen, minMax] = IsBoundingBoxVisible(obj, object, normalWalls, xCueLocation, yCueLocation, player, minReq, minMax)
+            
+            xMin = minMax(1);
+            xMax = minMax(2);
+            yMin = minMax(3);
+            yMax = minMax(4);
+            zMax = minMax(5);
+            
             % Mouse to check values
-%             [Xmouse, Ymouse, ~] = GetMouse(obj.viewportPtr);
-%             Xmouse = Xmouse / double(viewport(3));
-%             Ymouse = Ymouse / double(viewport(4));
+             viewport = glGetIntegerv(obj.GL.VIEWPORT);
+             [Xmouse, Ymouse, ~] = GetMouse(obj.viewportPtr);
+             Xmouse = Xmouse / double(viewport(3));
+             Ymouse = Ymouse / double(viewport(4));
+             
+            %disp([Xmouse Ymouse]);
             
             % Check if the view to the object is obstructed by wall
             %  Line connecting from player to object
@@ -1138,11 +1147,14 @@
             
             xDif = xMax - xMin;
             yDif = yMax - yMin;
-
-            minVisibility = (xDif * yDif * minReq);
             
+            boudingboxArea = xDif * yDif; 
+            
+            minVisibility = (boudingboxArea * minReq);
+             
             queueRect = [xMin yMin xDif yDif];
-            screenRect = [0 0 1.0 1.0];
+            
+            screenRect = [0 0 1 1];
             
             intersect = rectint(queueRect, screenRect);
             
@@ -1152,10 +1164,14 @@
                 
             end
             
-            minMax(1) = xMin;
-            minMax(2) = xMax;
-            minMax(3) = yMin;
-            minMax(4) = yMax;           
+            
+            minMaxPost(1) = xMin;
+            minMaxPost(2) = xMax;
+            minMaxPost(3) = yMin;
+            minMaxPost(4) = yMax;           
+%            disp([queueRect Xmouse Ymouse]);
+            disp(object);
+            disp([minMaxPost Xmouse Ymouse]);
             
         end
         
@@ -1217,7 +1233,7 @@
         
         function Close()
             
-            % ListenChar(0);
+            ListenChar(0);
             ShowCursor;
             Screen('CloseAll');
             error('User aborted');

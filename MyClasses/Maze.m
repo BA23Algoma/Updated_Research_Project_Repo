@@ -193,7 +193,7 @@ classdef Maze
         end
         
         
-        function Draw(obj)
+        function Draw(obj, drawDistal)
             
             if ~isempty(obj.nWalls)
                 
@@ -216,16 +216,22 @@ classdef Maze
                     
                 end
                 
+                
+                    
                 for i = 1:numel(obj.distalCue.x)
 
                     radius = 0.15;
                     t = 0:pi/50:2*pi;
-                    
+
                     %Draw distal cue
                       xDistal = radius*cos(t) - obj.distalCue.x(i);
                       yDistal = radius*sin(t) + obj.distalCue.y(i);
-                     patch(xDistal, yDistal, 'red');
 
+                      if drawDistal
+
+                          patch(xDistal, yDistal, 'red');
+                      
+                      end
                 end
                 
                 for i= 1:numel(obj.perCue.x)
@@ -390,11 +396,11 @@ classdef Maze
                  obj.perCue.obj = objStrCue{1};
                  obj.perCue.tex = objStrCue{2};
                  
-                 if numel(objStrCue) > 2
+                 %if numel(objStrCue) > 2
                      
-                     obj.perCue.normal = objStrCue{3};
+                     %obj.perCue.normal = objStrCue{3};
                      
-                 end
+                 %end
 
                  %Peripheral Cue 2
                  fgets(fid); % Skip comment line
@@ -410,11 +416,11 @@ classdef Maze
                  obj.perCue.objTwo = objStrCue{1};
                  obj.perCue.texTwo = objStrCue{2};
                  
-                 if numel(objStrCue) > 2
+                 %if numel(objStrCue) > 2
                      
-                     obj.perCue.normalTwo = objStrCue{3};
+                     %obj.perCue.normalTwo = objStrCue{3};
 
-                 end
+                 %end
                 
                 fclose(fid);
                 

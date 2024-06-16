@@ -7,6 +7,8 @@ classdef GazePoint
         ipAddress;
         portNum;
         client;
+        gazePointSTR;
+        names;
         
     end
     
@@ -32,6 +34,30 @@ classdef GazePoint
  
             end
             
+            obj.names = {
+                    'XMin', 'XMax','YMin', 'YMax',...
+                    'CueOneXMin', 'CueOneXMax'...
+                    'CueOneYMin', 'CueOneYMax'...
+                    'CueTwoXMin', 'CueTwoXMax'...
+                    'CueTwoYMin', 'CueTwoYMax'...
+                    'DistalXMin', 'DistalXMax'...
+                    'DistalYMin', 'DistalYMax'...
+                    };
+                    
+                for index = 1:numel(obj.names)
+                    obj.gazePointSTR.(obj.names{index}) = '';
+                end
+                
+%                obj.gazePointSTR.XMin = ' X_Min';
+%                obj.gazePointSTR.XMax = ' X_Max';
+%                obj.gazePointSTR.YMin = ' Y_Min';
+%                obj.gazePointSTR.YMax = ' Y_Max';
+                
+                obj.gazePointSTR.XMin = 'A:';
+                obj.gazePointSTR.XMax = 'B:';
+                obj.gazePointSTR.YMin = 'C:';
+                obj.gazePointSTR.YMax = 'D:';
+            
         end
         
         function Calibrate(obj, render, inputDevice, initCalibration)
@@ -47,13 +73,13 @@ classdef GazePoint
                 
                 cali1Str = 'We are going to calibrate eye tracker before starting experiment.';
                 cali2Str = 'Ensure you are in an upright position.';
-                cali3Str = 'Hit SPACE BAR to begin calibration.';
+                cali3Str = 'Hit ENTER to begin calibration.';
                 standby.ShowStandby(render, inputDevice, cali1Str, cali2Str, cali3Str);
                 
             else
                 
                 cali1Str = 'We are going to re-calibrate eye tracker.'; 
-                cali2Str = 'Hit SPACE BAR when ready to begin calibration.';
+                cali2Str = 'Hit ENTER when ready to begin calibration.';
                 standby.ShowStandby(render, inputDevice, cali1Str, cali2Str);
                 
             end
@@ -147,11 +173,11 @@ classdef GazePoint
      
             if numValid >= 4
                 
-                standby.ShowStandby(render, inputDevice, 'Calibration Successful', 'Hit SPACE BAR to continue experiment' );
+                standby.ShowStandby(render, inputDevice, 'Calibration Successful', 'Hit ENTER to continue experiment' );
                 
             else
                 
-                standby.ShowStandby(render, inputDevice, 'Calibration Unsuccessful', 'Hit SPACE BAR to initialize calibration process' );
+                standby.ShowStandby(render, inputDevice, 'Calibration Unsuccessful', 'Hit ENTER to initialize calibration process' );
                 obj.Calibrate(render, inputDevice, 0)
                 
             end
@@ -159,13 +185,13 @@ classdef GazePoint
         end
         
          % Used to balance delimiters
-         function obj = Blank(obj)
-             
-             emptySpace = ',,,,,,,,,,,,,,,,,,,,,,,';
-             
-             obj.Log(emptySpace);
-         
-         end
+%         function obj = Blank(obj)
+%             
+%             emptySpace = ',,,,,,,,,,,,,,,,,,,,,,,';
+%             
+%             obj.Log(emptySpace);
+%         
+%         end
         
         
         function obj = Log(obj, command)
