@@ -718,14 +718,14 @@
                 %Building bounding box for distal queue to record screen
                 %coordinates
                 box = [
-                    sphereCenter(1)-sphereRadius, height+sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)+sphereRadius, height+sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)-sphereRadius, height+sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)+sphereRadius, height+sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)-sphereRadius, height-sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)+sphereRadius, height-sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)-sphereRadius, height-sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)+sphereRadius, height-sphereRadius, sphereCenter(3)-sphereRadius
+                    sphereCenter(1)-sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)+sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)-sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)-sphereRadius;
+                    sphereCenter(1)+sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)-sphereRadius;
+                    sphereCenter(1)-sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)+sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)+sphereRadius;
+                    sphereCenter(1)-sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)-sphereRadius;
+                    sphereCenter(1)+sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)-sphereRadius
                     ]';
                 
                 X = zeros(1,8);
@@ -743,7 +743,7 @@
                  
                 end
                 
-                % obj = obj.drawBoundingBox(box);
+    %             obj = obj.drawBoundingBox(box);
                 
                  xMin = min(X);
                  yMin = min(Y);
@@ -790,15 +790,16 @@
 %                  if collisionFlag == 1
 %                      fprintf('Collision\n');
 %                  end
-%               
+
+                distalCue = [sphereCenter(1), sphereCenter(3)];
                 
-                
-                
+                blocked = Occlusion.IsMoonBlocked(player, distalCue, maze.normalWallArray, obj.eyeLevel, sphereCenter(2), 0.5);
+                 
                 if ipClient.client ~= -1
                     
                     gap = '0;';
                         
-                    if onScreen
+                    if onScreen && ~blocked
                         
                         ipClient.gazePointSTR.DistalXMin =  strcat(num2str(xMin),';');
                         ipClient.gazePointSTR.DistalXMax =  strcat(num2str(xMax),';');
@@ -822,7 +823,7 @@
                 if ~(strcmp(maze.perCue.obj,'NA'))
                     
                     % Set whether to draw bounding boxes for objects
-                    drawBox = false;
+                    drawBox = true;
                     
                     visible = [0 0];
                     
@@ -836,10 +837,11 @@
                      glCallList(obj.displayListOne);
                         
                      %------------BoundedBox Setup----------------
-                     [boundingBoxOne, minMax] = boundBoxInitialize(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
-                     
+                     boxOne = BoundingBox(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
+                     [boundingBoxOne, minMax] = boxOne.BoundBoxInitialize();
+                                          
                      % Check if bounding box is on screen 
-                     [onScreen, ~] = IsBoundingBoxVisible(obj, 'Sign', maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, obj.minReq, minMax); 
+                     [onScreen, ~] = boxOne.IsBoundingBoxVisible(maze.normalWallArray,  maze.perCue.x(1), maze.perCue.y(1) ,player, obj.minReq, minMax); 
                      
                      minMaxLimits(1, :) = minMax;
                      visible(1) = onScreen;
@@ -860,11 +862,11 @@
                      glCallList(obj.displayListTwo);
 
                      %------------BoundedBox Setup----------------
-                     [boundingBoxTwo, minMaxTwo] = boundBoxInitialize(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
-
-
+                     boxTwo = BoundingBox(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
+                     [boundingBoxTwo, minMaxTwo] = boxTwo.BoundBoxInitialize();
+                     
                      % Check if bounding box is on screen 
-                     [onScreenTwo, ~] = IsBoundingBoxVisible(obj, 'Gas Container', maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, obj.minReq, minMaxTwo); 
+                     [onScreenTwo, ~] = boxTwo.IsBoundingBoxVisible(maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, obj.minReq, minMaxTwo); 
                      
                      minMaxLimits(2, :) = minMaxTwo;
                      visible(2) = onScreenTwo;
@@ -887,8 +889,10 @@
                       names = ipClient.names(5:12);
                       names = reshape(names, [4,2]);
                       
+                      % Load values for sending to round cube
                       for cue = 1:numel(visible)
-                              
+                          
+                          % Send the bounding box limit values
                           if visible(cue)
 
                               for index = 1:numel(names(:, 1))
@@ -898,7 +902,7 @@
                               end
                               
                           else
-                              
+                              % send 0
                               for index = 1:numel(names(:, 1))
 
                                   ipClient.gazePointSTR.(names{index , cue}) =  gap;
@@ -1024,157 +1028,6 @@
              % end
 
         end
-
-        function [BoundingBox, minMax] = boundBoxInitialize(obj, Cue, scale)
-            
-            % Accumulate translation
-            % Initialize local transformation matrix as an identity matrix
-            Cue.localTransform = eye(4);
-            translationVector = [0, 0, 0];
-            translationMatrix = makehgtform('translate', translationVector);
-            Cue.localTransform = Cue.localTransform * translationMatrix;
-
-            % Assume obj is your 3D object structure with fields like cueProperties, localTransform, etc.
-            vertices = Cue.vertices * scale;
-
-            %Global Transform
-            globaltranslationVector = [0, 0, 0];
-            rotationAngles = [0, 0, 0]; % Angles in degrees
-            
-            % Create translation matrix
-            T = eye(4);
-            T(1:3, 4) = globaltranslationVector;
-            
-            % Create rotation matrix (assuming rotation is around the origin)
-            R = euler2rotmat(rotationAngles);
-
-            % Combine translation and rotation
-            globalTransform = T * R;
-
-            % Call the bounding box function
-            [boundingBox] = calculateBoundingBox(vertices, ...
-                Cue.localTransform, globalTransform);
-            
-            BoundingBox = boundingBox;
-            
-            % Retrieve matrix values
-            modelViewMatrix = glGetDoublev(obj.GL.MODELVIEW_MATRIX);
-            projectionMatrix2D = glGetDoublev(obj.GL.PROJECTION_MATRIX);
-            viewport = glGetIntegerv(obj.GL.VIEWPORT);
-            
-            % Initalize matrices to zero
-            X = zeros(1,size(boundingBox, 2));
-            Y = zeros(1,size(boundingBox, 2));
-            Z = zeros(1,size(boundingBox, 2));
-            
-            
-            
-            % Find (X,Y, Z) projected coordinates of bounding box vertices
-             for i = 1:size(boundingBox, 2)
-                 
-                 [X(i), Y(i), Z(i)] = gluProject(boundingBox(1,i), boundingBox(2,i), boundingBox(3,i),...
-                     modelViewMatrix, projectionMatrix2D, viewport);
-                
-             end
-             
-             % Find max and min values
-             xMin = min(X);
-             yMin = min(Y);
-             xMax = max(X);
-             yMax = max(Y);
-             zMax = max(Z);
-            
-            % Adjust Y to match OpenGL coordinate system
-            yMin = double(viewport(4)) - yMin;
-            yMax = double(viewport(4)) - yMax;
-            
-            % Normailize values for gazepoint ((0,0) Top left, (1,1) Bottom
-            % right)            
-            xMin = xMin / double(viewport(3));
-            xMax = xMax / double(viewport(3));
-            
-            % Because of caretian plan. Y min is max while Y max is min
-            tempyMin = yMin;
-            yMin = yMax / double(viewport(4));
-            yMax = tempyMin / double(viewport(4));
-            
-            minMax = [xMin xMax yMin yMax zMax];
-            %disp(minMax);  
-            
-        end
-        
-        function [onScreen, minMax] = IsBoundingBoxVisible(obj, object, normalWalls, xCueLocation, yCueLocation, player, minReq, minMax)
-            
-            xMin = minMax(1);
-            xMax = minMax(2);
-            yMin = minMax(3);
-            yMax = minMax(4);
-            zMax = minMax(5);
-            
-            % Mouse to check values
-             viewport = glGetIntegerv(obj.GL.VIEWPORT);
-             [Xmouse, Ymouse, ~] = GetMouse(obj.viewportPtr);
-             Xmouse = Xmouse / double(viewport(3));
-             Ymouse = Ymouse / double(viewport(4));
-             
-            %disp([Xmouse Ymouse]);
-            
-            % Check if the view to the object is obstructed by wall
-            %  Line connecting from player to object
-            lineOfSight(1) = xCueLocation;
-            lineOfSight(2) = yCueLocation;
-            lineOfSight(3) = player.previousPos(1);
-            lineOfSight(4) = player.previousPos(2);
-            
-            % Check if view is blocked by wall
-            viewBlocked = false;
-            
-            for wallIndex = 1:numel(normalWalls)
-                
-                %Check each wall for intersection with lineOfSight
-                if doLineSegmentsIntersect(lineOfSight, normalWalls(wallIndex))
-                    
-                    viewBlocked = true;
-
-                    break;
-                    
-                end
-                
-            end
-            
-            % Check if queue is on screen (viewable)
-            onScreen = false;
-            
-            xDif = xMax - xMin;
-            yDif = yMax - yMin;
-            
-            boudingboxArea = xDif * yDif; 
-            
-            minVisibility = (boudingboxArea * minReq);
-             
-            queueRect = [xMin yMin xDif yDif];
-            
-            screenRect = [0 0 1 1];
-            
-            intersect = rectint(queueRect, screenRect);
-            
-            if minVisibility < intersect && intersect < 1 && zMax < 1.0 && ~viewBlocked
-                
-                onScreen = true;
-                
-            end
-            
-            
-            minMaxPost(1) = xMin;
-            minMaxPost(2) = xMax;
-            minMaxPost(3) = yMin;
-            minMaxPost(4) = yMax;           
-%            disp([queueRect Xmouse Ymouse]);
-            disp(object);
-            disp([minMaxPost Xmouse Ymouse]);
-            
-        end
-        
 
         function obj = drawBoundingBox(obj, boundingBox)
             % Draw the wireframe
