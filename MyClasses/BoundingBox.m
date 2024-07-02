@@ -136,6 +136,8 @@ classdef BoundingBox
         end
         
         function [onScreen, minMax] = IsBoundingBoxVisible(~, normalWalls, xCueLocation, yCueLocation, player, minReq, minMax)
+            % First input paramter is obj, removed to get get rid warning
+            % but need to display mouse position for testing
             
             xMin = minMax(1);
             xMax = minMax(2);
@@ -144,12 +146,12 @@ classdef BoundingBox
             zMax = minMax(5);
             
             % Mouse to check values
-%             viewport = glGetIntegerv(obj.render.GL.VIEWPORT);
-%             [Xmouse, Ymouse, ~] = GetMouse(obj.render.viewportPtr);
-%             Xmouse = Xmouse / double(viewport(3));
-%             Ymouse = Ymouse / double(viewport(4));
+ %            viewport = glGetIntegerv(obj.render.GL.VIEWPORT);
+ %            [Xmouse, Ymouse, ~] = GetMouse(obj.render.viewportPtr);
+ %            Xmouse = Xmouse / double(viewport(3));
+ %            Ymouse = Ymouse / double(viewport(4));
              
-            %disp([Xmouse Ymouse]);
+ %           disp([Xmouse Ymouse]);
             
             % Check if the view to the object is obstructed by wall
             %  Line connecting from player to object
@@ -202,8 +204,7 @@ classdef BoundingBox
 %            minMaxPost(3) = yMin;
 %            minMaxPost(4) = yMax;           
 %            disp([queueRect Xmouse Ymouse]);
-%            disp(object);
-%            disp([minMaxPost]);
+%            disp(minMaxPost);
             
         end
         

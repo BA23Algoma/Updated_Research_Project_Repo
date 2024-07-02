@@ -1,4 +1,4 @@
-             function       MazeExp                    
+               function       MazeExp                    
                                                                      
      %     %      GUI modifiable parameters                                  
     %     p .participantI d               = 0;      
@@ -13,7 +13,7 @@
     %     p.tourDeltaDegPerFrame          = 3.0;    
     %     p.viewPoint                     = 1; 
     %     p.frameRate                     = 60;
-    %     p.perspectiv eAngle             = 45;
+    %     p.perspectiveAngle             = 45;
     
      
     
@@ -430,7 +430,7 @@
                         % Send practice note information to Gazepoint
                         if  ipClient.client ~= -1
                             
-                            strGP = strcat('Start Practice Trial');
+                            strGP = strcat('Start Learning Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
                             ipClient.Log(strGP);
                             
                         end
@@ -448,7 +448,7 @@
                         if  ipClient.client ~= -1
  
                             % Notify end of run to gazepoint
-                            strGP = ('End Practice trial');
+                            strGP = strcat('End Learning Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
                             ipClient.Log(strGP);
                              
                         end
@@ -481,7 +481,7 @@
                     % Send experiment end note information to Gazepoint
                     if  ipClient.client ~= -1
                             
-                        strGP = strcat('End Experiment ', mazeFileName);
+                        strGP = strcat('End Experiment Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
                         ipClient.Log(strGP);
                             
                     end

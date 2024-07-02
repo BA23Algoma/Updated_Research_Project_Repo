@@ -32,7 +32,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--2.5	3.5	0.125	180.0 wet_floor_sign.obj   wet_floor_sign.png
+-2.5	3.5	0.125	0 wet_floor_sign.obj   wet_floor_sign.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -4.5	4.5	0.125	0.0 gasContainer.obj  gasContainer.png
 //line is listed as width then depth, for the start and end of line

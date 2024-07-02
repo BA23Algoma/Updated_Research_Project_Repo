@@ -31,6 +31,7 @@
         rectTwo;
         shaderProgram;
         minReq              = 0.001; % Min intersect to be viewable
+        wallHeight          = 0.70;
     end
     
     properties (SetAccess = protected)
@@ -641,9 +642,9 @@
                 thisWall = maze.normalWallArray(wallIndex);
                 
                 glTexCoord2f(0.0, 0.0); glVertex3f(thisWall.p1(1), 0.0, thisWall.p1(2));
-                glTexCoord2f(0.0, 1.0); glVertex3f(thisWall.p1(1), 0.5, thisWall.p1(2));
+                glTexCoord2f(0.0, 1.0); glVertex3f(thisWall.p1(1), obj.wallHeight, thisWall.p1(2));
                 
-                glTexCoord2f(thisWall.norm, 1.0); glVertex3f(thisWall.p2(1), 0.5, thisWall.p2(2));
+                glTexCoord2f(thisWall.norm, 1.0); glVertex3f(thisWall.p2(1), obj.wallHeight, thisWall.p2(2));
                 glTexCoord2f(thisWall.norm, 0.0); glVertex3f(thisWall.p2(1), 0.0, thisWall.p2(2));
                 
             end
@@ -657,8 +658,8 @@
                 thisWall = maze.targetWallArray(wallIndex);
                 
                 glTexCoord2f(0.0, 0.0); glVertex3f(thisWall.p1(1), 0.0, thisWall.p1(2));
-                glTexCoord2f(0.0, 1.0); glVertex3f(thisWall.p1(1), 0.5, thisWall.p1(2));
-                glTexCoord2f(1.0, 1.0); glVertex3f(thisWall.p2(1), 0.5, thisWall.p2(2));
+                glTexCoord2f(0.0, 1.0); glVertex3f(thisWall.p1(1), obj.wallHeight, thisWall.p1(2));
+                glTexCoord2f(1.0, 1.0); glVertex3f(thisWall.p2(1), obj.wallHeight, thisWall.p2(2));
                 glTexCoord2f(1.0, 0.0); glVertex3f(thisWall.p2(1), 0.0, thisWall.p2(2));
                 
             end
@@ -674,9 +675,9 @@
                     thisWall = maze.tripWireArray(wallIndex);
                     
                     glTexCoord2f(0.0, 0.0); glVertex3f(thisWall.p1(1), 0.0, thisWall.p1(2));
-                    glTexCoord2f(0.0, 1.0); glVertex3f(thisWall.p1(1), 0.5, thisWall.p1(2));
+                    glTexCoord2f(0.0, 1.0); glVertex3f(thisWall.p1(1), obj.wallHeight, thisWall.p1(2));
                     
-                    glTexCoord2f(thisWall.norm, 1.0); glVertex3f(thisWall.p2(1), 0.5, thisWall.p2(2));
+                    glTexCoord2f(thisWall.norm, 1.0); glVertex3f(thisWall.p2(1), obj.wallHeight, thisWall.p2(2));
                     glTexCoord2f(thisWall.norm, 0.0); glVertex3f(thisWall.p2(1), 0.0, thisWall.p2(2));
                     
                 end
@@ -690,8 +691,9 @@
                 % surface)
                 numSlices = 1000;
                 
-                % Sphere height
-                height = 6;
+                % Sphere height and raduis
+                sphereRadius = 1.3; % 1.25 previously
+                height = 7.5;
                 
                 % Enable the loaded model texture
                 glEnable(obj.DistalCueTarget);
@@ -707,7 +709,6 @@
                 glBindTexture(obj.DistalCueTarget, obj.DistalCueName);
                 theSphere = gluNewQuadric;
                 gluQuadricTexture(theSphere, obj.GL.TRUE);
-                sphereRadius = 1.25;
                 gluSphere(theSphere, sphereRadius, numSlices, numSlices);
 
                 % Restore the transformation state
@@ -718,20 +719,21 @@
                 %Building bounding box for distal queue to record screen
                 %coordinates
                 box = [
-                    sphereCenter(1)-sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)+sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)-sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)+sphereRadius,  sphereCenter(2)+sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)-sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)+sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)+sphereRadius;
-                    sphereCenter(1)-sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)-sphereRadius;
-                    sphereCenter(1)+sphereRadius,  sphereCenter(2)-sphereRadius, sphereCenter(3)-sphereRadius
+                    sphereCenter(1) - sphereRadius,  sphereCenter(2) + sphereRadius, sphereCenter(3) + sphereRadius;
+                    sphereCenter(1) + sphereRadius,  sphereCenter(2) + sphereRadius, sphereCenter(3) + sphereRadius;
+                    sphereCenter(1) - sphereRadius,  sphereCenter(2) + sphereRadius, sphereCenter(3) - sphereRadius;
+                    sphereCenter(1) + sphereRadius,  sphereCenter(2) + sphereRadius, sphereCenter(3) - sphereRadius;
+                    sphereCenter(1) - sphereRadius,  sphereCenter(2) - sphereRadius, sphereCenter(3) + sphereRadius;
+                    sphereCenter(1) + sphereRadius,  sphereCenter(2) - sphereRadius, sphereCenter(3) + sphereRadius;
+                    sphereCenter(1) - sphereRadius,  sphereCenter(2) - sphereRadius, sphereCenter(3) - sphereRadius;
+                    sphereCenter(1) + sphereRadius,  sphereCenter(2) - sphereRadius, sphereCenter(3) - sphereRadius
                     ]';
                 
                 X = zeros(1,8);
                 Y = zeros(1,8);
                 Z = zeros(1,8);
                 
+                % Projecting world coordinates to screen coordinates
                 viewport = glGetIntegerv(obj.GL.VIEWPORT);
                 modelView = glGetDoublev(obj.GL.MODELVIEW_MATRIX);
                 projectionView = glGetDoublev(obj.GL.PROJECTION_MATRIX);
@@ -743,13 +745,13 @@
                  
                 end
                 
-    %             obj = obj.drawBoundingBox(box);
+%                 obj = obj.drawBoundingBox(box);
                 
                  xMin = min(X);
                  yMin = min(Y);
                  xMax = max(X);
                  yMax = max(Y);
-                 zMin = min(Z);
+                 zMin = min(Z); % relates to direction camera is facing
                  
                 % Adjust Y to match OpenGL coordinate system
                 yMin = double(viewport(4)) - yMin;
@@ -760,41 +762,41 @@
                 xMin = xMin / double(viewport(3));
                 xMax = xMax / double(viewport(3));
                 
-                % Because of caretian plan. Y min is max while Y max is min
+                % Because of inverted caretian plan. Y min is max, while Y max is min
                 tempyMin = yMin;
                 yMin = yMax / double(viewport(4));
                 yMax = tempyMin / double(viewport(4));
-            
+                
+%                 boxMinMax = [xMin, xMax, yMin, yMax];
+%                 disp(boxMinMax);
+                 
                 % Check if queue is on screen (viewable)
                 onScreen = false;
 
                 xDif = xMax - xMin;
                 yDif = yMax - yMin;
 
-                queueRect = [xMin xMax xDif yDif];
+                cueRect = [xMin xMax xDif yDif];
                 
                 screenRect = [0 0 1.0 1.0];
                                 
-                intersect = rectint(queueRect, screenRect);
+                intersect = rectint(cueRect, screenRect);
                 
-                minVisibility = (xDif * yDif * obj.minReq);
+                minVisibility = (xDif * yDif * obj.minReq); % minimum reqiured visiablity to be considered viewable
                 
                 if minVisibility < intersect && intersect <= 1 && zMin < 1
                     
                     onScreen = true;
                     
                 end
-                
-%                  [collisionFlag, ~] = maze.CollisionCheck(player);
-%                  
-%                  if collisionFlag == 1
-%                      fprintf('Collision\n');
-%                  end
 
                 distalCue = [sphereCenter(1), sphereCenter(3)];
                 
-                blocked = Occlusion.IsMoonBlocked(player, distalCue, maze.normalWallArray, obj.eyeLevel, sphereCenter(2), 0.5);
-                 
+                % check to see if the line of sight to moon is blcoked by
+                % wall
+                blocked = Occlusion.IsMoonBlocked(player, distalCue, maze.normalWallArray, obj.eyeLevel, sphereCenter(2), obj.wallHeight);
+                
+                % Send data to gazepoint
                 if ipClient.client ~= -1
                     
                     gap = '0;';
@@ -823,7 +825,7 @@
                 if ~(strcmp(maze.perCue.obj,'NA'))
                     
                     % Set whether to draw bounding boxes for objects
-                    drawBox = true;
+                    drawBox = false;
                     
                     visible = [0 0];
                     
@@ -838,6 +840,7 @@
                         
                      %------------BoundedBox Setup----------------
                      boxOne = BoundingBox(obj, obj.cueOneProperties{1}, maze.perCue.scale(1));
+                     
                      [boundingBoxOne, minMax] = boxOne.BoundBoxInitialize();
                                           
                      % Check if bounding box is on screen 
@@ -863,11 +866,12 @@
 
                      %------------BoundedBox Setup----------------
                      boxTwo = BoundingBox(obj, obj.cueTwoProperties{1}, maze.perCue.scale(2));
+                     
                      [boundingBoxTwo, minMaxTwo] = boxTwo.BoundBoxInitialize();
-                     
+                                          
                      % Check if bounding box is on screen 
-                     [onScreenTwo, ~] = boxTwo.IsBoundingBoxVisible(maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, obj.minReq, minMaxTwo); 
-                     
+                     [onScreenTwo, ~] = boxTwo.IsBoundingBoxVisible(maze.normalWallArray,  maze.perCue.x(2), maze.perCue.y(2) ,player, obj.minReq, minMaxTwo);  
+                    
                      minMaxLimits(2, :) = minMaxTwo;
                      visible(2) = onScreenTwo;
                       

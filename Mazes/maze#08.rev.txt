@@ -30,7 +30,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--0.40	5.85	0.075	90.0 tanker.obj tanker_BaseColor.png
+-0.40	5.85	0.125	90.0 sideTable.obj sideTable.png
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -5.85	0.25	0.175	0.0 noticeBoard.obj noticeBoard.png
 //line is listed as width then depth, for the start and end of line

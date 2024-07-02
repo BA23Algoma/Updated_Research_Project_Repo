@@ -23,7 +23,7 @@ classdef Occlusion
             % Find set of wall between player and distall queue
             closestIntersect= -1;
             minDistance = Inf;
-            intersectWall = -1;
+%            intersectWall = -1;
             
             for wallIndex = 1:numel(normalWalls)
                 
@@ -41,9 +41,15 @@ classdef Occlusion
                         
                         minDistance = distance;
                         closestIntersect = intersectionPoint;
-                        intersectWall = wallIndex;
+%                        intersectWall = wallIndex;
                         
                     end
+                    
+                else
+                    
+                    blocked = false;
+                    return;
+                    
                 end
                 
             end
