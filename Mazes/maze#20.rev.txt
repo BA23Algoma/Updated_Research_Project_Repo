@@ -30,7 +30,7 @@ wall-width  wall-depth  #-of-trials  #-of-walls  #-of-trip wires  hot_spots
 #Distal Queue
 -10.0	6.0	-6.0	10.0	-4.0	10.0	-10.0	4.0
 #Peripheral Queue - 1, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
--0.35	2.55	0.125	45.0 bagpack.obj bagpack.png
+-0.35	2.55	0.150	270.0 pcJuly.obj pcJuly.jpg
 #Peripheral Queue - 2, (X,Y, Scale, Rotate Angle, OBJ File, Texture)
 -1.45	4.55	0.125	90.0 picnicTableV3.obj picnicTableV3.png
 //line is listed as width then depth, for the start and end of line

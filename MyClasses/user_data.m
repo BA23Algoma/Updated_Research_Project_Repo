@@ -5,18 +5,29 @@ classdef user_data
     properties
         dataSet;
         sumFixation;
-        Time;
+        outputTable;
+        tableIndex;
+        TIME;
         FPOGX;
         FPOGY;
         FPOGS;
         FPOGD;
         FPOGID;
         FPOGV;
+        USER;
+        GSR;
+        GSRV;
+        HR;
+        HRV;
+        Var13;
         maze;
         OBJECT_1;
         OBJECT_2;
         DISTAL;
         fixation;
+        check;
+        cue = {'OBJECT_1', 'OBJECT_2', 'DISTAL'};
+        limits = {'xMin', 'xMax', 'yMin', 'yMax'};
 
     end
     
@@ -40,25 +51,47 @@ classdef user_data
        function obj = user_data()
        
            % Retreive path to data and fixation files
-           %rawData = FindFiles('Raw Data');
-           %fixData = FindFiles('Fixation Data');
+%           rawData = FindFiles('Raw Data');
+%           fixData = FindFiles('Fixation Data');
            
-           rawData = 'GazePoint User Data\Test Subject 2\result\User 2_all_gaze.csv';
-           fixData = 'GazePoint User Data\Test Subject 2\result\User 2_fixations.csv';
+           rawData = 'GazePoint User Data\Sample Data\367259_all_gaze.csv';
+           fixData = 'GazePoint User Data\Sample Data\367259_fixations.csv';
            
-           % Text scan the data files
-           obj.dataSet = obj.OpenFiles(rawData);
-           obj.sumFixation = obj.OpenFiles(fixData);
+           % Readtable to collect the data file information
+%           obj.dataSet = obj.OpenFiles(rawData);
+%           obj.sumFixation = obj.OpenFiles(fixData);
+           obj.dataSet = readtable(rawData, 'PreserveVariableNames', true);
+           obj.sumFixation = readtable(fixData, 'PreserveVariableNames', true);
            
            % Preallocate array values
-           obj = obj.Preallocate();
+%           obj = obj.Preallocate();
            
+           % Collect raw data variable names
+           varNames = obj.dataSet.Properties.VariableNames;
+           
+           % Replace TIME header with a simplier header ('TIME')
+           matches = regexp(varNames,'^.*TIME.*$', 'match');
+           timeHeader = ~cellfun(@isempty, matches);
+           varNames{timeHeader} = 'TIME';
+           obj.dataSet.Properties.VariableNames{timeHeader} = 'TIME';
+           
+           % Determine dataset size
+           numRows = size(obj.dataSet);
+           
+           % Preallocate raw data with zeros
+           obj = PreallocateVectoriztion(obj, numRows(1), varNames);
+           
+           % Preallocate cue data for min/max with zeros
+           obj = PreallocateVectoriztion(obj, numRows(1));
+                      
            % Parse raw and fixation data
-           obj = obj.ParseFixations();
-           obj = obj.ParseRawData();
+%           obj = obj.ParseFixations();
+%           Data = obj.ParseRawData(obj.dataSet, Data, varNames);
+           
+           obj = ParseRawDataVectorization(obj, varNames);
            
            % Build summary data
-           obj = obj.GazeDuration();
+%           obj = obj.GazeDuration();
             
        end
        
@@ -75,7 +108,7 @@ classdef user_data
            
        end
        
-       % Open the file from the given data path
+       % Open the file from the given data path, for text scan
        function [InputData] = OpenFiles(~, path)
            
            InputData = {}; % Initialize incase a error occurs
@@ -94,6 +127,8 @@ classdef user_data
                temp = temp{1};
                InputData = temp;
                fclose(fid);
+
+              
            end
            
        end
@@ -106,7 +141,7 @@ classdef user_data
             numFixation = numel(obj.sumFixation);
 
             % Base Data
-            obj.Time = zeros(dataSize, 1);
+            obj.TIME = zeros(dataSize, 1);
             obj.FPOGX = zeros(dataSize, 1);
             obj.FPOGY = zeros(dataSize, 1);
             obj.FPOGS = zeros(dataSize, 1);
@@ -137,6 +172,36 @@ classdef user_data
             obj.fixation.duration = zeros(numFixation, 1);
             obj.fixation.start = zeros(numFixation, 1);
             obj.fixation.end = zeros(numFixation, 1);
+           
+       end
+       
+       % prallocate memeory to arrays
+       function obj = PreallocateVectoriztion(varargin)
+           
+           obj = varargin{1};  
+           numRows = varargin{2};  
+     
+           % Raw data set preallocation
+           if nargin > 2
+               
+                varNames = varargin{3};
+                
+               
+               for i  = 1:length(varNames)
+                   obj.(varNames{i}) = zeros(numRows, 1);
+               end  
+            
+           else % cue data set preallocation
+           
+               for i  = 1:length(obj.cue)
+
+                   for j = 1:length(obj.limits)
+                       obj.(obj.cue{i}).(obj.limits{j}) = zeros(numRows, 1);
+                   end
+                   
+               end
+           
+           end
            
        end
        
@@ -176,7 +241,7 @@ classdef user_data
                  rowEntry = rowEntry.';
 
                  % Raw Data
-                obj.Time(j) = str2double(rowEntry(3));
+                obj.TIME(j) = str2double(rowEntry(3));
                 obj.FPOGX(j) = str2double(rowEntry(4));
                 obj.FPOGY(j) = str2double(rowEntry(5));
                 obj.FPOGS(j) = str2double(rowEntry(6));
@@ -294,6 +359,134 @@ classdef user_data
            
        end
        
+           % Parse raw data into arays including fixation start and stop times
+       function obj = ParseRawDataVectorization(obj, varNames)
+           
+           tagStart = 'START'; % Search for beginning of maze
+           tagEnd = 'END'; % Search for beginning of maze
+           tagExperiment = 'EXPERIMENT'; % Tag used to track data entries
+           tagLearn = 'LEARN'; % Tag used to track data entries
+           tagCue = '.OBJ'; % Track cues for each maze
+
+           % Raw Data
+           
+           % Asign values of table to data variable (Converting table to
+           % matrix)
+           for i  = 1:length(varNames)
+               obj.(varNames{i}) = obj.dataSet.(varNames{i});
+           end
+           
+           % Split user column based on delimiter ';'
+           splitData = cellfun(@(x) split(x, ';'), obj.USER, 'UniformOutput', false);
+
+           obj.check = (splitData);
+           
+           obj.outputTable = table('Size', [40 9],...
+               'VariableNames', ["Number", "MazeNumber", "Cue1"...
+               "Cue2", "LearningStart", "LearningEnd"...
+               "ExperimentStart", "ExperimentEnd", "ExperimentCondition"],...
+               'VariableTypes',{'double';'double';'string';'string';'double'...
+               ;'double';'double';'double';'string'});
+           
+           obj.tableIndex = 1;
+           obj.outputTable.Number =  [1:20 1:20]';
+                      
+           % Parse fixation all gazes table, skip headers
+            for j =1:numel(splitData)
+                
+                if numel(splitData{j}) > 5
+                    
+                    splitData{j} = splitData{j}(~cellfun('isempty', splitData{j}));
+                    
+                end
+                    
+                % Split data columns by delimiter ':', csv file
+                if contains(splitData{j}, ':')
+
+                    % Determine if the string is the objects or cue limit
+                    if  contains(splitData{j}, tagCue)
+
+                        rowEntry = split(splitData{j}, [":"; "&"]);
+                        obj.outputTable.Cue1(obj.tableIndex) = rowEntry{2};
+                        obj.outputTable.Cue2(obj.tableIndex) = rowEntry{3};
+                        
+                    else
+                        
+%                        splitData = splitData{j}(~cellfun('isempty', splitData{j}));
+                        rowEntry = split(splitData{j}, ':');
+%                        disp('Post removing last element');
+%                        disp(rowEntry);
+                        set = 4;
+
+                        %Parsing XMIN, XMAX, YMIN, YMAX values for all cues
+                        for index  = 1:length(obj.cue)
+
+                           for limitIndex = 1:length(obj.limits)
+                              cueCheck = rowEntry((((index - 1) * set) + limitIndex), 2);
+%                              disp(cueCheck);
+                              obj.(obj.cue{index}).(obj.limits{limitIndex})(j) = str2double(cueCheck);
+%                              obj.(obj.cue{index}).(obj.limits{limitIndex})(j) = str2double(rowEntry(((index - 1) * set) + limitIndex), 2);   
+                              
+                           end
+
+                        end
+                    
+                    end
+                
+                % Track start of mazes
+                elseif contains(splitData{j}, tagStart)
+                    
+                    if contains(splitData{j}, tagExperiment, 'IgnoreCase', true)
+                        
+                         obj.outputTable.ExperimentStart(obj.tableIndex) = j;
+%                        disp(splitData{j});
+                        
+                    else
+                        
+                        obj.outputTable.LearningStart(obj.tableIndex) = j;
+                        
+                        % Initialize table maze number index
+                        str = split(splitData{j}, ["#", "."]);
+                        obj.outputTable.MazeNumber(obj.tableIndex) =  str2double(str(2));
+ %                      disp(splitData{j});
+                        
+                    end
+                
+                % Track end of mazes
+                elseif contains(splitData{j}, tagEnd)
+                    
+                    if contains(splitData{j}, tagExperiment, 'IgnoreCase', true)
+                        
+                        obj.outputTable.ExperimentEnd(obj.tableIndex) = j;
+                        obj.tableIndex = obj.tableIndex + 1;
+                        
+                    else
+                        
+                        obj.outputTable.LearningEnd(obj.tableIndex) = j;
+
+                    end
+                    
+                else
+                    
+                    % Do nothing
+                    
+                end
+                
+                %Parsing XMIN, XMAX, YMIN, YMAX values for all cues
+                property = fieldnames(obj.OBJECT_1);
+                numCols = numel(property) * 2;
+                
+
+            end
+           
+           % Use the created Split function to split the USER data set into pairs
+%           numericData = cellfun(keyValueToNumeric, splitData, 'UniformOutput', false);
+%           numericDataMat = cell2mat(numericData);
+%           
+%             obj.OBJECT_1.xMin = numericDataMat(:, 1);
+           
+       end
+       
        function obj = GazeDuration(obj)
            
            %{ 
@@ -317,7 +510,7 @@ classdef user_data
                    end
 
                    % Duration
-                   time = obj.Time(j) - obj.Time(j-1);
+                   time = obj.TIME(j) - obj.TIME(j-1);
                    
                    for n = 5:2:9
                        
