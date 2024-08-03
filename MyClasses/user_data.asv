@@ -523,10 +523,6 @@ classdef user_data
                    
                        index = index + 1;
                    
-                   elseif index == numel(obj.FPOGID)
-                       
-                       break;
-                       
                    end
                    
                end
@@ -594,21 +590,16 @@ classdef user_data
                                
                                % code
                                str = strcat(obj.cue(gazeObject), '_LearningGazeTime');
-                               
                                columnNames = obj.outputTable.Properties.VariableNames;
-                               column = contains(columnNames, str);
                                
-                               obj.outputTable.(columnNames{column})(block) = obj.outputTable.(columnNames{column})(block) + duration;
+                               column = find(contains(columnNames, 
+                               obj.outputTable.(str)(block) = obj.outputTable.(str)(block) + duration;
                                
                            elseif ExpStart <= startingIdIndex && endingIdIndex <= ExpEnd
                                
                                % More code
                                str = strcat(obj.cue(gazeObject), '_ExperimentGazeTime');
-                               
-                               columnNames = obj.outputTable.Properties.VariableNames;
-                               column = contains(columnNames, str);
-                               
-                               obj.outputTable.(columnNames{column})(block) = obj.outputTable.(columnNames{column})(block) + duration;
+                               obj.outputTable.({str})(block) = obj.outputTable.(str)(block) + duration;
                                
                            else
                                
