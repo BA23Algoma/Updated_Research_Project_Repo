@@ -29,14 +29,14 @@ classdef Occlusion
                 
                 %Check each wall for intersection with lineOfSight
                 [intersect, intersectionPoint] = Occlusion.DoLineSegmentsIntersect(lineOfSight, normalWalls(wallIndex));
-                
+                                
                 if intersect
                     
                     playerPos = [lineOfSight(3),  lineOfSight(4)];
                     
                     distance = norm(playerPos - intersectionPoint);
                     
-                    % Find cloest intersect distance
+                    % Find closet intersect distance
                     if distance < minDistance
                         
                         minDistance = distance;
@@ -47,14 +47,20 @@ classdef Occlusion
                     
                 else
                     
-                    blocked = false;
-                    return;
+                    % Do nothing
                     
                 end
                 
             end
+            
+            if ~exist('playerPos', 'var')
+                
+                blocked = false;
+                return;
+
+            end
                         
-            % Claculate distance to cloest wall
+            % Claculate distance to closest wall
             distanceToWall = Occlusion.CalculateDistianceToWall(playerPos, ...
                 distallPos, closestIntersect);
             
@@ -65,15 +71,15 @@ classdef Occlusion
                         
 %            wallPos = [normalWalls(intersectWall).p1, normalWalls(intersectWall).p2];
             
-            if intersectHeight < wallHeight && 0 < intersectHeight
+            if 0 < intersectHeight && intersectHeight < wallHeight
                 
                 blocked = true;
-%                disp('blocked');
+  %              disp('blocked');
 
             else
                 
                 blocked = false;
-%                disp('viewable');
+   %             disp('viewable');
                 
             end                
             
@@ -102,6 +108,8 @@ classdef Occlusion
             % Check if lines are parrallel
             if abs(crossProduct) < 1e-6
                 intersects = false; % Lines are parrallel
+                intersectionPoint = [];
+
                 return;
             end
 
@@ -110,16 +118,17 @@ classdef Occlusion
             t2 = ((x3 - x1) * u(2) - (y3 - y1) * u(1))/ crossProduct;
 
             % Check if the intersection point lies on the line segments
-            if t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <=1
+            if (t1 >= 0) && (t1 <= 1) && (t2 >= 0) && (t2 <=1)
                 intersects = true;
                 intersectionPoint = [x1 + t1 * u(1), y1 + t1 * u(2)];
-                
             else
                 intersects = false;
                 intersectionPoint = [];
             end
 
         end
+        
+        
         
         function distanceToWall = CalculateDistianceToWall(playerPos, distallPos, intersectionPoint)
             

@@ -637,6 +637,7 @@
             % Draw regular walls
             glBindTexture(obj.GL.TEXTURE_2D, obj.texNumId(1));
             glBegin(obj.GL.QUADS);
+            
             for wallIndex = 1:maze.nNormalWalls
                 
                 thisWall = maze.normalWallArray(wallIndex);
@@ -898,21 +899,15 @@
                           
                           % Send the bounding box limit values
                           if visible(cue)
-
                               for index = 1:numel(names(:, 1))
-
                                   ipClient.gazePointSTR.(names{index , cue}) =  strcat(num2str(minMaxLimits(cue, index)), ';');
-                                  
                               end
                               
                           else
                               % send 0
                               for index = 1:numel(names(:, 1))
-
-                                  ipClient.gazePointSTR.(names{index , cue}) =  gap;
-                                  
-                              end
-                              
+                                  ipClient.gazePointSTR.(names{index , cue}) =  gap;     
+                              end          
                           end
                           
                       end
@@ -925,9 +920,14 @@
            
             % Send to gazepoint if running eyetracker
               if ipClient.client ~= -1 
-
+                  
+                  % Return which half of screen user gazed
+                  ipClient.gazePointSTR.Loc = obj.EyeLocationHalf(maze, ipClient);
+                  
+                  % Simplify the ipclient variable
                   gpStr = ipClient.gazePointSTR;
                   
+                  % Costruct string to send to Gazepoint
                   strLog = strcat(...
                       gpStr.XMin, gpStr.CueOneXMin,...
                       gpStr.XMax, gpStr.CueOneXMax,...
@@ -940,10 +940,12 @@
                       gpStr.XMin, gpStr.DistalXMin,...
                       gpStr.XMax, gpStr.DistalXMax,...
                       gpStr.YMin, gpStr.DistalYMin,...
-                      gpStr.YMax, gpStr.DistalYMax...
+                      gpStr.YMax, gpStr.DistalYMax,...
+                      gpStr.EyeLoc, gpStr.Loc...
                       );
-                 
-                      ipClient.Log(strLog);
+                  
+                  % Send user data to Gazepoint user column
+                  ipClient.Log(strLog);
 
               end
        
@@ -1077,6 +1079,25 @@
                 glVertex3fv(boundingBox(:, 8));
                 glEnd();
         end
+        
+        function gaze = EyeLocationHalf(obj, maze, ipClient)
+            
+            % Retrieve projection model matrices
+            viewport = glGetIntegerv(obj.GL.VIEWPORT);
+            modelView = glGetDoublev(obj.GL.MODELVIEW_MATRIX);
+            projectionView = glGetDoublev(obj.GL.PROJECTION_MATRIX);
+            
+            % Get [FPOGX, FPOGY] from Gazepoint
+            FPOG = ipClient.EyeCoordinates();
+            
+            % Initialize the Gaze Location object
+            eyeLocation = GazeLocation(maze.nNormalWalls);
+            
+            % Determine which half of screen user was gazing
+            gaze = eyeLocation.EyeFocus(viewport, modelView, projectionView, maze, obj.wallHeight, FPOG);
+
+        end
+        
         
     end
     

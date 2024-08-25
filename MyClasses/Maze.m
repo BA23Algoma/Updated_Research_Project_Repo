@@ -21,6 +21,7 @@ classdef Maze
         nNormalWalls;
         pathName                = 'Mazes';
         nTargetWalls;
+        completeWallArray;
         nTripWires;
         tripCount;
         width;
@@ -63,7 +64,7 @@ classdef Maze
     
     methods
         
-        function [coordPoll, isCompleteFlag, stats] = Explore(obj, render, player, inputDevice, coordPollTimeLimit, coordPollInterval, nowNum, ipClient)
+        function [coordPoll, isCompleteFlag, stats, hesitantTime] = Explore(obj, render, player, inputDevice, coordPollTimeLimit, coordPollInterval, nowNum, ipClient)
             
             coordPoll = CoordPoll(coordPollTimeLimit, coordPollInterval, nowNum);
             
@@ -77,7 +78,9 @@ classdef Maze
             
             t0 = GetSecs;
             tDelta = 0;
+            minTime = 1; % Minimum hesitation time
             coordPoll = coordPoll.Start();
+            
             while 1
                                                 
                 coordPoll = coordPoll.Update(player, render);
@@ -152,6 +155,35 @@ classdef Maze
                         
                     end
                     
+                    % Check if the player is moving
+                    hesitationFlag = player.IsPlayerHesitating();
+               
+                    if hesitationFlag && player.hesitantTimeStart == 0
+                            
+                        player.hesitantTimeStart = GetSecs;
+                            
+                    elseif ~hesitationFlag && player.hesitantTimeStart ~= 0
+                        
+                        hesitationTime = GetSecs - player.hesitantTimeStart;
+
+                        if  minTime < hesitationTime
+                       
+                            player.hesitantTime =  player.hesitantTime + hesitationTime;
+                        
+                        else
+                            
+                            % Nothing
+                            
+                        end
+                        
+                        player.hesitantTimeStart = 0;
+                        
+                    else
+                        
+                        % Do nothing
+
+                    end
+                    
                     player.nextPos = player.proposedPos;
                     
                     player = player.UpdateState();
@@ -161,6 +193,8 @@ classdef Maze
                     player.previousPos = player.nextPos;
                     
                     tDelta = GetSecs - t0;
+                    
+                    hesitantTime = player.hesitantTime;
                     
                 end
                 
@@ -285,6 +319,7 @@ classdef Maze
                 obj.nTargetWalls = 3;
                 obj.normalWallArray = Wall(obj.nNormalWalls, 1);
                 obj.targetWallArray = Wall(obj.nTargetWalls, 1);
+                obj.completeWallArray = Wall(obj.nWalls, 1);
                 
                 normalWallIndex = 1;
                 targetWallIndex = 1;
@@ -322,12 +357,14 @@ classdef Maze
                         
                         targetWallIndex = targetWallIndex + 1;
                         
-                        
                     else
                      
                         error('Undefined wall string');
                         
                     end
+                    
+                    % Collect all the walls into 1 array
+                    obj.completeWallArray(1:obj.nWalls) = thisWall;
                     
                 end
                 
@@ -555,16 +592,24 @@ classdef Maze
                     collisionFlag = 1;
                     
                     % Translate everything so that line segment start point to (0, 0)
-                    a = x1 - x0; % Line segment end point horizontal coordinate
-                    b = z1 - z0; % Line segment end point vertical coordinate
+        %            a = x1 - x0; % Line segment end point horizontal coordinate
+        %            b = z1 - z0; % Line segment end point vertical coordinate
                     
                     % Determine normal wall vector
-                    normalWallVector = [-b, a];
-                    normalWallVector = normalWallVector / norm(normalWallVector);
+        %           normalWallVector = [-b, a];
+        %           normalWallVector = normalWallVector / norm(normalWallVector);
                 
-                    % Calcualte slide vector for collision
+                     % Calcualte slide vector for collision
+       %             normalComponent = dot(movementVector, normalWallVector) * normalWallVector;
+       
+                    % function check
+                    normalWallVector = thisWall.unitNormal;
+                    
                     normalComponent = dot(movementVector, normalWallVector) * normalWallVector;
-                    slideVector = movementVector - normalComponent;
+                    
+        %            slideVector = movementVector - normalComponent;
+        
+                     slideVector = movementVector - normalComponent;
                     
                     % Ensure propsoed position does not pentrate wall
                     %minDistance = Maze.calculateMinDistanceToWall(x0, x1, z0, z1, (slideVector(1) + player.previousPos(1)), (slideVector(2) + player.previousPos(2)), player.bodyRadius);

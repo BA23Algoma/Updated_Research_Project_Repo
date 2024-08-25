@@ -17,10 +17,10 @@
     
      
     
-    %    p.eyeLevel                      = -0.55;
+    %     p.eyeLevel                      = -0.55;
     %     p.coo rdPollInterval            = 0.1; 
     %     p.coordPollTimeLimit            = 240;
-    %    p.praticePollTimeLimit          = 60;
+    %     p.praticePollTimeLimit          = 60;
     %     p.cue                           = 1; % Proximal
     %     p.gazePoint                     = 0;
  
@@ -130,6 +130,10 @@
     % GazePoint (Eyetracker) TCP/IP remote initalization & Calibration
     if p.gazePoint
         
+        % Close any previously left open conections
+        pnet('closeall');
+        
+        % 172.19.15.77
         ipClient = GazePoint(p.ipAddress, 4242);
         
         WaitSecs(0.5);
@@ -138,6 +142,27 @@
         
         % Calibrate eyetracker
         ipClient.Calibrate(render, inputDevice, initCalibration);
+        
+        % Initialize retrieving POG data from gazepoint
+        ipClient.EnableSendingPOG();
+        
+        % Send experiment condition to Gazepoint
+        if  ipClient.client ~= -1
+            
+            
+            if p.cue
+                
+                strGP = 'Proximal and Distal Condition';
+                
+            else
+                
+                strGP = 'Distal Condition';
+                
+            end
+          
+            ipClient.Log(strGP);
+            
+        end
         
     else
         
@@ -165,17 +190,9 @@
         % Load Peripheral cues 
         render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
         
-        if  ipClient.client ~= -1
-            
-            %initialize maze to send client values
-            strGP = strcat('Beginning of', strcat(' ',mazeFileName));
-            ipClient.Log(strGP);
-            
-        end
-        
         ShowCursor;
         
-        [coordPoll, isCompleteFlag, stats] = maze.Explore(render, player, inputDevice, 1000, p.coordPollInterval, p.nowNum, ipClient);
+        [coordPoll, isCompleteFlag, stats, ~] = maze.Explore(render, player, inputDevice, 1000, p.coordPollInterval, p.nowNum, ipClient);
 
         coordPoll.SaveToFile(p.dataPath, p.participantId, maze.filePrefix, 'SingleMaze');
         
@@ -185,7 +202,7 @@
             ipClient.Log(strGPEnd);
             
         end
-
+        
         preExp.trials(mazeFileIndex, Schedule.COL.IS_COMPLETE) = isCompleteFlag;
         preExp.trials(mazeFileIndex, Schedule.COL.DELTA_TIME) = stats(1);
         preExp.trials(mazeFileIndex, Schedule.COL.N_ERRORS) = stats(2);
@@ -272,8 +289,17 @@
     
      % Main Experiment Instructions
     
-    
     if p.blockPracticeFlag
+        
+        % Set the practice Maze file title
+        practiceMaze = 'PracticeMaze';
+        
+        if  ipClient.client ~= -1
+ 
+            strGP = strcat('Start Practice Block Run Experiment', strcat('-', practiceMaze));
+            ipClient.Log(strGP);
+
+        end
         
         splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions1.jpg', 'Textures');
         
@@ -300,14 +326,45 @@
                     standbyBigNumber.ShowStandbyBigNumber(render, inputDevice, 'LEARNING PHASE begins in:', i, 'Next is the performance phase.', 1, 0);
 
                 end
+                
+                % Notify start of practice block to gazepoint
+                if  ipClient.client ~= -1
+                    
+                    strGP = strcat('Start Practice Block Run Learning', strcat('-', practiceMaze));
+                    ipClient.Log(strGP);
 
-                maze.Explore(render, player, inputDevice, p.praticePollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
+                end
+
+                [~, ~, ~, hesitantTime] = maze.Explore(render, player, inputDevice, p.praticePollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
+                
+                % Notify end of practice block to gazepoint
+                if  ipClient.client ~= -1
+ 
+                    strGP = strcat('End Practice Block Run Learning', strcat('-', practiceMaze));
+                    ipClient.Log(strGP);
+                    WaitSecs(.1);
+                    strHesTime = strcat('Pre-Trial hesitancy time of', strcat('-', num2str(hesitantTime))); 
+                    ipClient.Log(strHesTime);
+                    
+                end
+                
+                disp('Player hesitancy time....');
+                disp(hesitantTime);
+                              
                 % WaitSecs(.25);
                 rating.RatingSelect(render, inputDevice, 'RCJ'); 
             end
 
             
             % Maze run 
+            
+            if  ipClient.client ~= -1
+ 
+                % Notify end of run to gazepoint
+                strGP = strcat('Start Practice Block Run Experiment', strcat('-', practiceMaze));
+                ipClient.Log(strGP);
+
+            end
             
             splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions4.jpg', 'Textures', ipClient, Standby);
 
@@ -318,7 +375,22 @@
 
             end
             
-            maze.Explore(render, player, inputDevice, p.coordPollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
+            [~, ~, ~, hesitantTime] = maze.Explore(render, player, inputDevice, p.coordPollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
+            
+            if  ipClient.client ~= -1
+ 
+                % Notify end of run to gazepoint
+                strGP = strcat('End Practice Block Run Experiment', strcat('-', practiceMaze));
+                ipClient.Log(strGP);
+                WaitSecs(.1);
+                strHesTime = strcat('Final hesitancy time of', strcat('-', num2str(hesitantTime)));
+                ipClient.Log(strHesTime);
+
+            end
+            
+            disp('Player hesitancy time....');
+            disp(hesitantTime);
+            
             %         WaitSecs(.25);    
             rating.RatingSelect(render, inputDevice, 'RCJ');
             
@@ -377,6 +449,7 @@
                     WaitSecs(.25);
                     jolRating = rating.RatingSelect(render, inputDevice, 'JOL');
                     expSchedule.trials(trialIndex, Schedule.COL.JOL_RATING) = jolRating;
+                    
                 end
             end
 
@@ -402,7 +475,6 @@
                         
                         % Big break before continuing experiment
                         % splashScreen.ShowSplashScreen(render, inputDevice, 'Instructions1.jpg', 'Textures');
-                        
                         initCalibration = 0;
                         
                         % Calibrate eyetracker
@@ -441,7 +513,8 @@
 
                         end
 
-                        maze.Explore(render, player, inputDevice, p.praticePollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
+                        [~, ~, ~, hesitantTime] = maze.Explore(render, player, inputDevice, p.praticePollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
+                        
                         % WaitSecs(.25);
                         rating.RatingSelect(render, inputDevice, 'RCJ');
                         
@@ -450,8 +523,15 @@
                             % Notify end of run to gazepoint
                             strGP = strcat('End Learning Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
                             ipClient.Log(strGP);
+                            WaitSecs(.1);
+                            strHesTime = strcat('Pre-Trial hesitancy time of', strcat('-', num2str(hesitantTime))); 
+                            ipClient.Log(strHesTime);
                              
+                            
                         end
+                        
+                        disp('Player hesitancy time....');
+                        disp(hesitantTime);
                                          
                     end
 
@@ -476,15 +556,21 @@
                             
                     end
 
-                    [coordPoll, isCompleteFlag, stats] = maze.Explore(render, player, inputDevice, p.coordPollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
-
+                    [coordPoll, isCompleteFlag, stats, hesitantTime] = maze.Explore(render, player, inputDevice, p.coordPollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
+                    
                     % Send experiment end note information to Gazepoint
                     if  ipClient.client ~= -1
                             
                         strGP = strcat('End Experiment Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
                         ipClient.Log(strGP);
+                        WaitSecs(.1);
+                        strHesTime = strcat('Final hesitancy time of', strcat('-', num2str(hesitantTime))); 
+                        ipClient.Log(strHesTime);
                             
                     end
+                    
+                    disp('Player hesitancy time....');
+                    disp(hesitantTime);
                     
                     coordPoll.SaveToFile(p.dataPath, p.participantId, maze.filePrefix, 'user');
 

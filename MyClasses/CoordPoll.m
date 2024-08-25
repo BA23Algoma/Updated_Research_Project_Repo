@@ -87,8 +87,8 @@ classdef CoordPoll
                obj.tIndex = obj.tIndex + 1;
                obj.t0 = GetSecs;
                
-           end
-            
+            end
+           
         end
         
 

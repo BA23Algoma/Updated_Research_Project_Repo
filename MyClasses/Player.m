@@ -19,7 +19,10 @@ classdef Player
         v;
         norm;
         normSqr;
-
+        hesitationFlag;
+        hesitantTime        = 0;
+        hesitantRaduis      = 0.0025;
+        hesitantTimeStart   = 0;
         
     end
     
@@ -96,7 +99,21 @@ classdef Player
                 
             end
             
-        end                                        
+        end
+        
+        function hesitationFlag = IsPlayerHesitating(obj)
+            
+           hesitationFlag = 0;
+           xDisplacement = abs(obj.proposedPos(1) - obj.previousPos(1));
+           yDisplacement = abs(obj.proposedPos(2) - obj.previousPos(2));
+           
+           if (xDisplacement < obj.hesitantRaduis) && (yDisplacement < obj.hesitantRaduis)
+               
+               hesitationFlag = 1;
+               
+           end
+            
+        end
         
     end % methods
     
