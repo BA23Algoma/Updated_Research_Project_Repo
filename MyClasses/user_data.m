@@ -3,6 +3,7 @@
 classdef user_data
     
     properties
+        saveAsName;
         dataSet;
         sumFixation;
         outputTable;
@@ -28,7 +29,8 @@ classdef user_data
         fixation;
         condition;
         LOC;
-        inside;
+        insideAOI;
+        insidescreenHalf;
         cue             = {'OBJECT_1', 'OBJECT_2', 'DISTAL'};
         limits          = {'xMin', 'xMax', 'yMin', 'yMax'};
         screenHalfs     = ["SKY", "GROUND"];
@@ -40,6 +42,8 @@ classdef user_data
         fileNameSuffix = '.summaryFile.csv';
         dataPath       = 'GazePoint User Data';
         proccessed     = 'ProcessedData';
+        gazePointstring = '_all_gaze';
+        fileTypeSufix  = '.csv';
         
     end
     
@@ -48,99 +52,1038 @@ classdef user_data
        function obj = user_data()
        
            % Retreive path to data and fixation files
-%           rawData = FindFiles('Raw Data');
+%           rawData = FindFiles(obj, 'Raw Data');
 %           fixData = FindFiles('Fixation Data');
            
 %           rawData = 'GazePoint User Data\Sample Data\367259_all_gaze_edited.csv';
-           fixData = 'GazePoint User Data\Sample Data\367259_fixations.csv';
+%           fixData = 'GazePoint User Data\Sample Data\367259_fixations.csv';
            
            % Test raw data
-           rawData = 'GazePoint User Data\Sample Data\User 22_all_gaze.csv';
+%           rawData = 'GazePoint User Data\Sample Data\User 22_all_gaze.csv';
            
            % Readtable to collect the data file information
 %           obj.dataSet = obj.OpenFiles(rawData);
 %           obj.sumFixation = obj.OpenFiles(fixData);
-           obj.dataSet = readtable(rawData, 'PreserveVariableNames', true);
-           obj.sumFixation = readtable(fixData, 'PreserveVariableNames', true);
-           
+%           obj.sumFixation = readtable(fixData, 'PreserveVariableNames', true);
+
            % Preallocate array values
 %           obj = obj.Preallocate();
            
-           % Collect raw data variable names
-           varNames = obj.dataSet.Properties.VariableNames;
+           % Set the name of the file
+           fileName = userDataGUI();
+           obj.saveAsName = strcat(fileName, obj.fileNameSuffix);
            
-           % Replace TIME header with a simplier header ('TIME')
-           matches = regexp(varNames,'^.*TIME.*$', 'match');
-           timeHeader = ~cellfun(@isempty, matches);
-           varNames{timeHeader} = 'TIME';
-           obj.dataSet.Properties.VariableNames{timeHeader} = 'TIME';
+           WaitSecs(0.5);
            
-           % Determine dataset size
-           numRows = size(obj.dataSet);
-           
-           % Preallocate raw data with zeros
-           obj = PreallocateVectoriztion(obj, numRows(1), varNames);
-           
-           % Preallocate cue data for min/max with zeros
-           obj = PreallocateVectoriztion(obj, numRows(1));
-                      
-           % Parse raw and fixation data
-%           obj = obj.ParseFixations();
-%           Data = obj.ParseRawData(obj.dataSet, Data, varNames);
-           
-           obj = ParseRawDataVectorization(obj, varNames);
-           
-           % Build gaze time summary data
-           obj = GazeDurationVectorization(obj);
-           
-           % Output Sorted Data Table
-           fileName = strcat('1345_processed_data', obj.fileNameSuffix);
-           
-           fid = fopen( fullfile(obj.dataPath, obj.proccessed, fileName), 'at');
-           writetable(obj.outputTable, fullfile(obj.dataPath, obj.proccessed, fileName));
-           fclose(fid);
-            
-       end
-       
-        % Retrieve Data Path to File
-       function [filePath] = FindFiles(type)
-           
-           % Build string for menu of graphical interface
-           strInstr = strcat('Select ', type, ' file');
-           [file, path] = uigetfile('', strInstr); % retrieve file
-            
-           
-           % Return file path
-           filePath = strcat(path, file);
-           
-       end
-       
-       % Open the file from the given data path, for text scan
-       function [InputData] = OpenFiles(~, path)
-           
-           InputData = {}; % Initialize incase a error occurs
-           
-           % Open file path
-           fid = fopen(path);
+           % Retrieve gaze point files folder path
+           path = uigetdir('', ' Select the folder containing Gaze Point data'); 
 
-           % Error check if the file was able to open
-           if fid == -1
+           % Collect file names from the folder
+           fileNames = dir(path);
+           fileNames = {fileNames(:).name};
+           
+           % Remove non gaze point all gaze files
+           fileNameIndex = contains(fileNames(:), "_all_gaze.csv");
+           fileNames = fileNames(fileNameIndex);
 
-                disp('Error, unable to open data file, check file name and location');
+           % Transpose and set full file paths
+           fileNames = {fileNames(:)}';
+           fileNames = fullfile(path, fileNames{:});
+           
+           for user = 1:numel(fileNames)
 
-           else
+               % Readtable to collect the data file information
+               obj.dataSet = readtable(fileNames{user}, 'PreserveVariableNames', true);
+
+               % Collect raw data variable names
+               varNames = obj.dataSet.Properties.VariableNames;
                
-               temp = textscan(fid, '%s', 'Delimiter', '\r');
-               temp = temp{1};
-               InputData = temp;
-               fclose(fid);
+               % Replace TIME header with a simplier header ('TIME')
+               matches = regexp(varNames,'^.*TIME.*$', 'match');
+               timeHeader = ~cellfun(@isempty, matches);
+               varNames{timeHeader} = 'TIME';
+               obj.dataSet.Properties.VariableNames{timeHeader} = 'TIME';
 
-              
+               % Determine dataset size
+               numRows = size(obj.dataSet);
+
+               % Preallocate raw data variable with zeros
+               obj = PreallocateVectoriztion(obj, numRows(1), varNames);
+
+               % Preallocate cue data for min/max with zeros
+               obj = PreallocateVectoriztion(obj, numRows(1));
+
+               obj = ParseRawDataVectorization(obj, varNames);
+
+               % Build gaze time summary data
+               obj = GazeDurationVectorization(obj);
+
+               % Collect ID name for data file experiment
+               
+               curFileName = split(fileNames(user), "\");
+ 
+               for i = 1:length(curFileName)
+
+                   if contains(curFileName{i}, obj.gazePointstring)
+                       userID = curFileName{i};
+                   end
+
+               end
+               
+               % Construct the final output table
+               obj = ConstructfinalTable(obj, userID);
+
+               % Add data to text and output file
+               SaveToFile(obj);
+               
+               % Display completed data set to screen
+               fprintf('Completed data for user %s, %i / %i\n', userID, user, numel(fileNames));
+           
+           end
+            
+       end
+      
+       % prallocate memeory to arrays
+       function obj = PreallocateVectoriztion(varargin)
+           
+           obj = varargin{1};  
+           numRows = varargin{2};  
+     
+           % Raw data set preallocation
+           if nargin > 2
+               
+                varNames = varargin{3};
+                
+               
+               for i  = 1:length(varNames)
+                   obj.(varNames{i}) = zeros(numRows, 1);
+               end  
+            
+           else % cue data set preallocation
+           
+               for i  = 1:length(obj.cue)
+
+                   for j = 1:length(obj.limits)
+                       obj.(obj.cue{i}).(obj.limits{j}) = zeros(numRows, 1);
+                   end
+                   
+               end
+           
+           end
+           
+           % Allocate Screen half location
+           obj.LOC = cell(numRows, 1);
+           obj.LOC(:) = {''};
+           
+           % Allocate the gaze Object (AOI) inside check
+           obj.insideAOI = zeros(1, length(obj.cue));
+           obj.insidescreenHalf = [];
+           
+       end
+       
+       % Parse raw data into arays including fixation start and stop times
+       function obj = ParseRawDataVectorization(obj, varNames)
+           
+           % Set the tags to search in input data
+           
+           tag = struct(...
+            'Condition',             'DISTAL',...
+            'Start',                 'START',...
+            'End',                   'END',...
+            'Experiment',            'EXPERIMENT',...
+            'Practice',              'PRACTICE',...
+            'Learn',                 'LEARN',...
+            'Cue',                   '.OBJ',...
+            'Hesitancy',             'TIME',...
+            'HesitancyLearning',     'PRE-TRIAL',...
+            'HesitancyFinal',        'FINAL');
+            
+           % Raw Data
+           
+           % Asign values of table to data variable (Converting table to
+           % matrix)
+           for i  = 1:length(varNames)
+               obj.(varNames{i}) = obj.dataSet.(varNames{i});
+           end
+           
+           % Split user column based on delimiter ';'
+           splitData = cellfun(@(x) split(x, ';'), obj.USER, 'UniformOutput', false);
+
+           % Set number of rows and columns of table
+           %{
+            obj.outputTable = table('Size', [100 49],...
+               'VariableNames', ["OrderNumber", "MazeNumber", "Cue1"...
+               "Cue2", "LearningStart", "LearningEnd"...
+               "ExperimentStart", "ExperimentEnd", "ExperimentCondition",...
+               "OBJECT_1_LearningGazeTime", "OBJECT_1_ExperimentGazeTime",...
+               "OBJECT_2_LearningGazeTime", "OBJECT_2_ExperimentGazeTime",...
+               "SUM_OBJECT_LearningGazeTime", "SUM_OBJECT_ExperimentGazeTime",...
+               "DISTAL_LearningGazeTime", "DISTAL_ExperimentGazeTime",...
+               "HesitancyTimeLearning", "HesitancyTimeExperiment",...
+               "SkyTimeLearning","SkyTimeExperiment",...
+               "GroundTimeLearning","GroundTimeExperiment",...
+               "SKY_LearnLastInsideFixation","GROUND_LearnLastInsideFixation",...
+               "SKY_LearnLastOutsideFixation", "GROUND_LearnLastOutsideFixation",...
+               "SKY_ExpLastInsideFixation","GROUND_ExpLastInsideFixation",...
+               "SKY_ExpLastOutsideFixation", "GROUND_ExpLastOutsideFixation",...
+               "OBJECT_1_LearnLastInsideFixation","OBJECT_2_LearnLastInsideFixation",...
+               "DISTAL_LearnLastInsideFixation", "OBJECT_1_LearnLastOutsideFixation",...
+               "OBJECT_2_LearnLastOutsideFixation", "DISTAL_LearnLastOutsideFixation",...
+               "OBJECT_1_ExpLastInsideFixation","OBJECT_2_ExpLastInsideFixation",...
+               "DISTAL_ExpLastInsideFixation", "OBJECT_1_ExpLastOutsideFixation",...
+               "OBJECT_2_ExpLastOutsideFixation", "DISTAL_ExpLastOutsideFixation",...
+               "SUM_OBJECT_LearnLastInsideFixation","SUM_OBJECT_LearnLastOutsideFixation"...
+               "SUM_OBJECT_ExpLastInsideFixation","SUM_OBJECT_ExpLastOutsideFixation"...
+               "TotalFixationLearning","TotalFixationExperiment",...
+               "AverageGalvanicSkinLearning","AverageGalvanicSkinExperiment",...
+               "AverageHeartRateLearning","AverageHeartRateExperiment"],...
+               'VariableTypes',{'double';'double';'string';'string';...
+               'double';'double';'double';'double';'string';'double';...
+               'double';'double';'double';'double';'double';'double';...
+               'double';'double';'double';'double';'double';'double';...
+               'double';'double';'double';'double';'double';'double';...
+               'double';'double';'double';'double';'double';'double';...
+               'double';'double';'double';'double';'double';'double';...
+               'double';'double';'double';'double';'double';'double';...
+               'double';'double';'double'});
+               %}
+           variableNamesTypes =...
+               [["OrderNumber", "double"];...
+               ["MazeNumber","double"];...
+               ["Cue1", "string"];...
+               ["Cue2", "string"];...
+               ["LearningStart", "double"];...
+               ["LearningEnd", "double"];...
+               ["ExperimentStart", "double"];...
+               ["ExperimentEnd", "double"];...
+               ["ExperimentCondition", "string"];...
+               ["OBJECT_1_LearningGazeTime", "double"];...
+               ["OBJECT_1_ExperimentGazeTime", "double"];...
+               ["OBJECT_2_LearningGazeTime", "double"];...
+               ["OBJECT_2_ExperimentGazeTime", "double"];...
+               ["SUM_OBJECT_LearningGazeTime", "double"];...
+               ["SUM_OBJECT_ExperimentGazeTime", "double"];...
+               ["DISTAL_LearningGazeTime", "double"];...
+               ["DISTAL_ExperimentGazeTime", "double"];...
+               ["HesitancyTimeLearning", "double"];...
+               ["HesitancyTimeExperiment", "double"];...
+               ["SkyTimeLearning", "double"];...
+               ["SkyTimeExperiment", "double"];...
+               ["GroundTimeLearning", "double"];...
+               ["GroundTimeExperiment", "double"];...
+               ["SKY_LearnLastInsideFixation", "double"];...
+               ["SKY_LearnLastOutsideFixation", "double"];...
+               ["SKY_ExpLastInsideFixation", "double"];...
+               ["SKY_ExpLastOutsideFixation", "double"];...
+               ["GROUND_LearnLastInsideFixation", "double"];...
+               ["GROUND_LearnLastOutsideFixation", "double"];...
+               ["GROUND_ExpLastInsideFixation", "double"];...
+               ["GROUND_ExpLastOutsideFixation", "double"];...
+               ["OBJECT_1_LearnLastInsideFixation", "double"];...
+               ["OBJECT_1_LearnLastOutsideFixation", "double"];...
+               ["OBJECT_1_ExpLastInsideFixation", "double"];...
+               ["OBJECT_1_ExpLastOutsideFixation", "double"];...
+               ["OBJECT_2_LearnLastInsideFixation", "double"];...
+               ["OBJECT_2_LearnLastOutsideFixation", "double"];...
+               ["OBJECT_2_ExpLastInsideFixation", "double"];...
+               ["OBJECT_2_ExpLastOutsideFixation", "double"];...
+               ["DISTAL_LearnLastInsideFixation", "double"];...
+               ["DISTAL_LearnLastOutsideFixation", "double"];...
+               ["DISTAL_ExpLastInsideFixation", "double"];...
+               ["DISTAL_ExpLastOutsideFixation", "double"];...
+               ["SUM_OBJECT_LearnLastInsideFixation", "double"];...
+               ["SUM_OBJECT_LearnLastOutsideFixation", "double"];...
+               ["SUM_OBJECT_ExpLastInsideFixation", "double"];...
+               ["SUM_OBJECT_ExpLastOutsideFixation", "double"];...
+               ["TotalFixationLearning", "double"];...
+               ["TotalFixationExperiment", "double"];...
+               ["AverageGalvanicSkinLearning", "double"];...
+               ["AverageGalvanicSkinExperiment", "double"];...
+               ["AverageHeartRateLearning", "double"];...
+               ["AverageHeartRateExperiment", "double"]];
+
+           obj.outputTable = table('Size', [100, size(variableNamesTypes, 1)],...
+                'VariableNames',variableNamesTypes(:, 1),...
+                'VariableTypes',variableNamesTypes(:, 2));
+           
+           obj.tableIndex = 1;
+                      
+           % Parse fixation all gazes table, skip headers
+            for j =1:numel(splitData)
+                
+                if numel(splitData{j}) > 1   
+                    
+                    for i = 1:numel(splitData{j})
+                        
+                        % Determine the number of ':' in eah
+                        delimeter = strfind(splitData{j}{i},':');
+                        
+                        if length(delimeter) > 1
+                    
+                            % Adjust the split row to the correct format
+                            newRows = split(splitData{j}(i), ':');
+                            temp = newRows(end);
+                            newRows(end) = [];
+                            newRows = strcat(newRows, ':');
+                            newRows(end) = strcat(newRows{end}, temp);
+                            
+                            preRows = [];
+                            
+                            if i > 1
+                                
+                                preRows = splitData{j}(1:i-1);
+                                
+                            end
+                            
+                            splitData{j} = [preRows; newRows; splitData{j}(i+1:end)];
+                            
+                        end
+                        
+                        
+                    end
+                    
+                    splitData{j} = splitData{j}(~cellfun('isempty', splitData{j}));
+
+                end
+                    
+                % Split data columns by delimiter ':', csv file
+                if contains(splitData{j}, ':')
+
+                    % Determine if the string is the objects or cue limit
+                    if  contains(splitData{j}, tag.Cue)
+
+                        rowEntry = split(splitData{j}, [":"; "&"]);
+                        obj.outputTable.Cue1(obj.tableIndex) = rowEntry{2};
+                        obj.outputTable.Cue2(obj.tableIndex) = rowEntry{3};
+                        
+                    else
+                        disp(splitData{j});
+%                        splitData = splitData{j}(~cellfun('isempty', splitData{j}));
+                        rowEntry = split(splitData{j}, ':');
+%                        disp('Post removing last element');
+%                        disp(rowEntry);
+
+                        % Loop for each cue
+                        for index  = 1:length(obj.cue)
+
+                            %Parsing XMIN, XMAX, YMIN, YMAX values for all cues
+                           for limitIndex = 1:length(obj.limits)
+                              
+                               % Retrieve row value and convert to string
+                              cueCheck = rowEntry((((index - 1) * numel(obj.limits)) + limitIndex), 2);
+
+                              % Set the object cue value to the 
+                              obj.(obj.cue{index}).(obj.limits{limitIndex})(j) = str2double(cueCheck);
+                              
+                           end
+
+                        end
+                        
+ %                       obj.check = (splitData);
+                        eyeLocation = numel(obj.cue) * numel(obj.limits);
+                        
+                        if eyeLocation < numel(rowEntry(:, 2))
+ 
+                            obj.LOC(j) = rowEntry((eyeLocation + 1), 2);
+                        
+                        end
+                    
+                    end
+                
+                % Set condition
+                elseif contains(splitData{j}, tag.Condition)
+                    
+                    obj.condition = splitData{j};
+                    
+                % Track start of mazes
+                elseif contains(splitData{j}, tag.Start)
+
+                    if contains(splitData{j}, tag.Experiment, 'IgnoreCase', true)
+                        
+                        % Set the start of the experiment phase
+                        obj.outputTable.ExperimentStart(obj.tableIndex) = j;
+                        
+                    else
+
+                        % Set the strat of the learning phase
+                        obj.outputTable.LearningStart(obj.tableIndex) = j;
+                        
+                        if contains(splitData{j}, tag.Practice, 'IgnoreCase', true)
+                        
+                            % Set the order number to zero
+                            obj.outputTable.OrderNumber(obj.tableIndex) = 0;
+                            
+                            obj.outputTable.MazeNumber(obj.tableIndex) =  0;
+                        
+                        else
+
+                            % Initialize table maze number index
+                            splitString = split(splitData{j}, ["#", "."]);
+                            obj.outputTable.MazeNumber(obj.tableIndex) =  str2double(splitString(2));
+
+                            % Set the maze order number
+                            pattern = 'NUMBER(\d*)';
+                            orderNum = regexp(splitString(1), pattern, 'tokens');
+                            obj.outputTable.OrderNumber(obj.tableIndex) = str2double(orderNum{1}{1});
+
+                        end
+                        
+                    end
+                
+                % Track end of mazes
+                elseif contains(splitData{j}, tag.End)
+                    
+                    if contains(splitData{j}, tag.Experiment, 'IgnoreCase', true)
+                        
+                        obj.outputTable.ExperimentEnd(obj.tableIndex) = j;
+                        
+                        
+                    else
+                        
+                        obj.outputTable.LearningEnd(obj.tableIndex) = j;
+
+                    end
+                    
+                elseif contains(splitData{j}, tag.Hesitancy)
+                    
+                    % Retrieve the value of hesitancy time
+                    hesiPattern = 'OF-(\d*\.?\d+)';
+                    hesiTime = regexp(splitData{j}, hesiPattern, 'tokens');
+  %                  disp(str2double(hesiTime{1}{1}));
+                    
+                    if contains(splitData{j}, tag.HesitancyLearning, 'IgnoreCase', true)
+                        
+                        obj.outputTable.HesitancyTimeLearning(obj.tableIndex) = str2double(hesiTime{1}{1});
+                        
+                    else
+                        
+                        obj.outputTable.HesitancyTimeExperiment(obj.tableIndex) = str2double(hesiTime{1}{1});
+
+                        % Increment the table index 
+                        obj.outputTable.ExperimentCondition(obj.tableIndex) = obj.condition;
+                        obj.tableIndex = obj.tableIndex + 1;
+                        
+                    end
+                   
+                    
+                else
+                    
+                    % Do nothing
+                    
+                end              
+
+            end
+           
+           
+       end
+       
+       function obj = GazeDurationVectorization(obj)
+
+           index = 1;
+           
+           % Gazes are broken into fixation ID's, where the duration of the
+           % fixation is added to the individual cue gaze times
+
+           while  index < numel(obj.FPOGID)
+               
+               % Find starting index of next FPOGID
+               startingIdIndex = index;
+               
+               % Find ending index current FPOGID
+               
+               while obj.FPOGID(startingIdIndex) == obj.FPOGID(index)
+                   
+                   % Determine the final valid FPOG
+                   if obj.FPOGV(index) == 1
+                       
+                       endingIdIndex = index;
+                       
+                   end
+                   
+                   if index < numel(obj.FPOGID)
+                   
+                       index = index + 1;
+                   
+                   elseif index == numel(obj.FPOGID)
+                       
+                       break;
+                       
+                   end
+                   
+               end
+               
+               % check to ensure that the FPOG is valid
+               if obj.FPOGV(startingIdIndex) ~= 1
+                  
+                   continue;
+                   
+               else
+                   
+                   % Get the current ID gaze duration
+                   duration = obj.FPOGD(endingIdIndex);
+                   
+                   % Get the index set for thr screen halfs
+                   eyeGaze = obj.LOC(startingIdIndex:endingIdIndex);
+
+                   % Remove empty array fields
+                   eyeGaze(eyeGaze == "") = [];
+                   
+                   % Ensure the remainging eyeGaze has values
+                   if isempty(eyeGaze)
+                       
+                       eyeLoc = [];
+                       
+                   else
+                       
+                       % Cross check for apperances of both conditions
+                       skyMatches = matches(eyeGaze, obj.screenHalfs{1});
+                       groundMatches = matches(eyeGaze, obj.screenHalfs{2});
+                       
+                       totalskyMatches = sum(skyMatches);
+                       totalgroundMatches = sum(groundMatches);
+                       
+                       % Set the eye location to the most prominent
+                       % condition totalskyMatches
+                       if totalgroundMatches < totalskyMatches
+                           
+                           eyeLoc = obj.screenHalfs(1);
+                           
+                       else
+                           
+                           eyeLoc = obj.screenHalfs(2);
+                           
+                       end
+                       
+                   end
+                   
+                   % Get the average FPOG X/Y for current ID
+                   avgFPOGX = mean(obj.FPOGX(startingIdIndex:endingIdIndex));
+                   avgFPOGY = mean(obj.FPOGY(startingIdIndex:endingIdIndex));
+                   
+                   % Preallocate rects based on cues
+                   boundingBox = zeros(length(obj.cue), length(obj.limits));
+                   
+                   % Construct the rects based on the cue bounding boxes
+                   for i  = 1:length(obj.cue)
+                       
+                       cueData = obj.(obj.cue{i});
+                       
+                       % Retrive bounding box values
+                       xMin = cueData.xMin(startingIdIndex:endingIdIndex);
+                       yMin = cueData.yMin(startingIdIndex:endingIdIndex);
+                       xMax = cueData.xMax(startingIdIndex:endingIdIndex);
+                       yMax = cueData.yMax(startingIdIndex:endingIdIndex);
+                       
+                       % remove zero entries
+                       xMin(xMin==0)=[];
+                       yMin(yMin==0)=[];
+                       xMax(xMax==0)=[];
+                       yMax(yMax==0)=[];
+                       
+                       % Get average values
+                       avgXMIN = mean(xMin);
+                       avgYMIN = mean(yMin);
+                       avgXMAX = mean(xMax);
+                       avgYMAX = mean(yMax);
+
+                       boundingBox(i, :) = [avgXMIN, avgYMIN, avgXMAX, avgYMAX];
+        
+                   end
+                   
+                   % Determine if the FPOG was within a bounding box, which
+                   % which bounding box eye lie within
+                   AOI = gazeInRect(obj, boundingBox, avgFPOGX, avgFPOGY);
+                   
+                   %  Collect the column name for setting the values
+                   columnNames = obj.outputTable.Properties.VariableNames;
+
+                   % Set the fixation increment count
+                   count = 1;
+                                                      
+                   for block = 1:length(obj.outputTable.OrderNumber)
+                   
+                       % Initialize maze block indices
+                       learningStart = obj.outputTable.LearningStart(block);
+                       learningEnd = obj.outputTable.LearningEnd(block);
+                       ExpStart = obj.outputTable.ExperimentStart(block);
+                       ExpEnd = obj.outputTable.ExperimentEnd(block);
+                           
+                       % Allocating duration 
+                       if learningStart <= startingIdIndex && endingIdIndex <= learningEnd
+
+                           % Ensure the FPOG was within one of the the bounding boxes
+                           if AOI ~= -1 
+
+                               if ~isempty(obj.insidescreenHalf)
+
+                                   disp(strcat('Exited ', obj.insidescreenHalf, '**********'));
+                                   
+                               end
+                               
+                               % Reset AOI inside tracker
+                               obj.insidescreenHalf = [];
+                               
+                               % Set the AOI fixation cloumn
+                               if obj.insideAOI(AOI) == 0
+               
+                                   obj.insideAOI(AOI) = 1;
+                                   
+                                   fixCondition = '_LearnLastOutsideFixation';
+                                   fixationAOI = strcat(obj.cue(AOI), fixCondition);
+           
+                               else
+                                   
+                                  fixCondition = '_LearnLastInsideFixation';
+                                  fixationAOI = strcat(obj.cue(AOI), fixCondition); 
+           
+                               end
+                               
+                               % Reset all other inside values to zero
+                               obj.insideAOI(1:end ~= AOI) = 0;
+               
+                               % Building column names
+                               learningGaze = strcat(obj.cue(AOI), '_LearningGazeTime');
+
+                               % Find column in table
+                               columnGaze = contains(columnNames, learningGaze);
+                               columnFixation = contains(columnNames, fixationAOI);
+                               
+                               % Add duration to time block
+                               obj.outputTable.(columnNames{columnGaze})(block) = obj.outputTable.(columnNames{columnGaze})(block) + duration;
+
+                               % Add to fixation count
+                               obj.outputTable.(columnNames{columnFixation})(block) = obj.outputTable.(columnNames{columnFixation})(block) + count;
+                               
+                               % Add to the sum values in the tables
+                               if  contains(columnNames{columnGaze}, "OBJECT")
+                               
+                                   sumFxtnAOI = strcat('SUM_OBJECT', fixCondition);
+                                   obj.outputTable.(sumFxtnAOI)(block) = obj.outputTable.(sumFxtnAOI)(block) + count;
+
+                               end
+               
+                           elseif ~isempty(eyeLoc) 
+                               
+                               % Reset AOI inside tracker
+                               obj.insideAOI(:) = 0;
+                               
+                               % Set the eye location based on user data
+                               eyeLoc = eyeGaze(1);
+                               
+                               % Set the AOI fixation cloumn
+                               if isempty(obj.insidescreenHalf) || ~strcmp(obj.insidescreenHalf, eyeLoc)
+               
+                                   if ~isempty(obj.insidescreenHalf)
+
+                                       disp(strcat('Exited ', obj.insidescreenHalf, '**********'));
+                                   
+                                   end
+                               
+                                   obj.insidescreenHalf = eyeLoc;
+                                   
+                                   fixCondition = '_LearnLastOutsideFixation';
+           
+                                   disp(strcat('Entered ', eyeLoc, '........'));
+                                   
+                               else
+                                   
+                                  fixCondition = '_LearnLastInsideFixation';
+                                  disp(strcat('Inside', eyeLoc));
+                                  
+                               end
+                               
+                               % Building column name
+                               timing = strcat(eyeLoc,'TimeLearning');
+                               
+                               % Find column in table
+                               column = contains(columnNames, timing, 'IgnoreCase', true);
+
+                               % Add duration to time block
+                               obj.outputTable.(columnNames{column})(block) = obj.outputTable.(columnNames{column})(block) + duration;
+                               
+                               % Add to fixation count
+                               fixHalf = strcat(eyeLoc, fixCondition);
+                               columnScreenHalf = contains(columnNames, fixHalf, 'IgnoreCase', true);
+                               obj.outputTable.(columnNames{columnScreenHalf})(block) = obj.outputTable.(columnNames{columnScreenHalf})(block) + count;
+                               
+                           else
+                               
+                               % Do nothing
+                               
+                           end
+
+                           % Find total learning fixationa column in table
+                           columnTotalFix = contains(columnNames, "TotalFixationLearning");
+                           
+                           % Add to total number of fixations
+                           obj.outputTable.(columnNames{columnTotalFix})(block) = obj.outputTable.(columnNames{columnTotalFix})(block) + count;
+                           
+                           % Set the average Galvanic Skin and Heart Rate
+                           obj.outputTable.AverageGalvanicSkinLearning(block) = mean(obj.GSR(learningStart:learningEnd));
+                           obj.outputTable.AverageHeartRateLearning(block) = mean(obj.HR(learningStart:learningEnd));
+                   
+                       elseif ExpStart <= startingIdIndex && endingIdIndex <= ExpEnd
+%                               helperStr = strcat(obj.cue(gazeObject), '...........', string(obj.FPOGID(endingIdIndex)));
+%                               disp(helperStr);
+
+                           % Ensure the FPOG was within one of the the bounding boxes
+                           if AOI ~= -1 
+
+                               % Reset AOI inside tracker
+                               obj.insidescreenHalf = [];
+                               
+                               % Set the AOI fixation cloumn
+                               if obj.insideAOI(AOI) == 0
+               
+                                   obj.insideAOI(AOI) = 1;
+                                   
+                                   fixCondition = '_ExpLastOutsideFixation';
+                                   fixationAOI = strcat(obj.cue(AOI), fixCondition);
+           
+                               else
+                                  
+                                   fixCondition = '_ExpLastInsideFixation';
+                                   fixationAOI = strcat(obj.cue(AOI), fixCondition); 
+           
+                               end
+                               
+                               % Reset all other inside values to zero
+                               obj.insideAOI(1:end ~= AOI) = 0;
+                               
+                               % Building column names
+                               expGaze = strcat(obj.cue(AOI), '_ExperimentGazeTime');
+                               
+                               % Find column in table
+                               columnGaze = contains(columnNames, expGaze);
+                               columnFixation = contains(columnNames, fixationAOI);
+
+                               % Add duration to time block
+                               obj.outputTable.(columnNames{columnGaze})(block) = obj.outputTable.(columnNames{columnGaze})(block) + duration;
+
+                               % Add fixation to time block
+                               obj.outputTable.(columnNames{columnFixation})(block) = obj.outputTable.(columnNames{columnFixation})(block) + count;
+                               
+                               % Add to the sum values in the tables
+                               if  contains(columnNames{columnGaze}, "OBJECT")
+                               
+                                   sumFxtnAOI = strcat('SUM_OBJECT', fixCondition);
+                                   obj.outputTable.(sumFxtnAOI)(block) = obj.outputTable.(sumFxtnAOI)(block) + count;
+
+                               end
+                               
+                           elseif ~isempty(eyeLoc) % Set the eye  location to sky or ground
+                       
+                               % Reset AOI inside tracker
+                               obj.insideAOI(:) = 0;
+                               
+                               % Set the AOI fixation cloumn
+                               if isempty(obj.insidescreenHalf) || strcmp(obj.insidescreenHalf, eyeLoc)
+               
+                                   obj.insidescreenHalf = eyeLoc;
+                                   
+                                   fixCondition = '_LearnLastOutsideFixation';
+           
+                               else
+                                   
+                                  fixCondition = '_LearnLastInsideFixation';
+           
+                               end
+                               
+                               % Building column name
+                               timing = strcat(eyeLoc,'TimeExperiment');
+                               
+                               % Find column in table
+                               column = contains(columnNames, timing, 'IgnoreCase', true);
+                               
+                               % Add duration to time block
+                               obj.outputTable.(columnNames{column})(block) = obj.outputTable.(columnNames{column})(block) + duration;
+                               
+                               % Add to fixation count
+                               fixHalf = strcat(eyeLoc, fixCondition);
+                               columnScreenHalf = contains(columnNames, fixHalf, 'IgnoreCase', true);
+                               obj.outputTable.(columnNames{columnScreenHalf})(block) = obj.outputTable.(columnNames{columnScreenHalf})(block) + count;
+                               
+                           else
+                               
+                               % Do Nothing
+                               
+                           end
+                           
+                           % Find total experiment fixationa column in table
+                           columnTotalFix = contains(columnNames, "TotalFixationExperiment");
+                           
+                           % Add to total number of fixations
+                           obj.outputTable.(columnNames{columnTotalFix})(block) = obj.outputTable.(columnNames{columnTotalFix})(block) + count;
+                           
+                           % Set the average Galvanic Skin and Heart Rate
+                           obj.outputTable.AverageGalvanicSkinExperiment(block) = mean(obj.GSR(ExpStart:ExpEnd));
+                           obj.outputTable.AverageHeartRateExperiment(block) = mean(obj.HR(ExpStart:ExpEnd));
+                           
+                       else
+
+                           % do nothing
+
+                       end
+                     
+                   end
+                   
+               end
+               
            end
            
        end
        
-       % prallocate memeory to arrays
+       function obj = ConstructfinalTable(obj, userID)
+           
+           pattern = strcat('(.*)', obj.gazePointstring);
+           userID = regexp(userID, pattern, 'tokens');
+           
+           % Set number of rows and columns for table
+           finalVariableNamesTypes =...
+               [["RecordingGazePointID", "string"];...
+               ["MatlabID","string"];...
+               ["Condition","string"];...
+               ["LearningVsPerformance", "string"];...
+               ["MazeOrder", "double"];...
+               ["AOI", "string"];...
+               ["AOI_Time", "double"];...
+               ["HesistencyTime", "double"];...
+               ["TotalTrialTime", "double"];...
+               ["AverageHeartRate", "string"];...
+               ["AverageGalvanicSkinResponse", "double"];...
+               ["AOIFixationLastInside", "double"];...
+               ["AOIFixationLastOutside", "double"];...
+               ["TotalFixation", "double"]];
+           
+           obj.finalTable = table('Size', [700, size(finalVariableNamesTypes, 1)],...
+                'VariableNames',finalVariableNamesTypes(:, 1),...
+                'VariableTypes',finalVariableNamesTypes(:, 2));
+            
+           % Get the number of elements in the table
+           userSize = obj.tableIndex - 1;
+           
+           % Reset table index for final table
+           obj.tableIndex = 1;
+               
+           gazetime = [...
+               "SUM_OBJECT_LearningGazeTime", "DISTAL_LearningGazeTime", "SkyTimeLearning","GroundTimeLearning";...
+               "SUM_OBJECT_ExperimentGazeTime", "DISTAL_ExperimentGazeTime", "SkyTimeExperiment", "GroundTimeExperiment"];
+          
+          AOIFixationLastInside = [...
+               "SUM_OBJECT_LearnLastInsideFixation", "DISTAL_LearnLastInsideFixation", "SKY_LearnLastInsideFixation",  "GROUND_LearnLastInsideFixation";...
+               "SUM_OBJECT_ExpLastInsideFixation", "DISTAL_ExpLastInsideFixation", "SKY_ExpLastInsideFixation",  "GROUND_ExpLastInsideFixation"...
+               ];
+          
+          AOIFixationLastOutside = [...
+               "SUM_OBJECT_LearnLastOutsideFixation", "DISTAL_LearnLastOutsideFixation", "SKY_LearnLastOutsideFixation", "GROUND_LearnLastOutsideFixation";...
+               "SUM_OBJECT_ExpLastOutsideFixation", "DISTAL_ExpLastOutsideFixation", "SKY_ExpLastOutsideFixation",  "GROUND_ExpLastOutsideFixation"...
+               ];
+           
+           totalFixationTime = ["TotalFixationLearning", "TotalFixationExperiment"];
+           
+           heartRate = ["AverageHeartRateLearning", "AverageHeartRateExperiment"];
+
+           galvanicSkinRate = ["AverageGalvanicSkinLearning", "AverageGalvanicSkinExperiment"];
+   
+           hesitancyTime = ["HesitancyTimeLearning", "HesitancyTimeExperiment"];
+           
+           experimentPhase = ["Learning", "Performance"];
+           
+           AOISet = ["Proximal", "Distal", "Sky", "Lower"];
+
+           % Loop the the table loading data
+           for index = 1:userSize
+               
+               % Loop between learning and performance phases
+               for phase = 1:2
+                   
+                   for AOIid = 1:length(AOISet)
+                   
+                       % Skip Proximal if only distal condition
+                       expCondition = obj.outputTable.ExperimentCondition(index);
+                       
+                       if ~contains(expCondition, "PROXIMAL") && (AOISet(AOIid) == "DISTAL")
+                           continue;
+                       end
+                       
+                       % Load the user name
+                       obj.finalTable.RecordingGazePointID(obj.tableIndex) = userID;
+
+                       % Set the experiment condition
+                       obj.finalTable.Condition(obj.tableIndex) = obj.outputTable.ExperimentCondition(index);
+
+                       % Set the phase, whether learning or experiment
+                       obj.finalTable.LearningVsPerformance(obj.tableIndex) = experimentPhase(phase);
+
+                       % Set the maze order
+                       obj.finalTable.MazeOrder(obj.tableIndex) = obj.outputTable.OrderNumber(index);
+
+                       % Set the maze idenity
+                       obj.finalTable.MazeIdentity(obj.tableIndex) = obj.outputTable.MazeNumber(index);
+
+                       % Sum the total
+                       sumTime = 0;
+                       for set = 1:length(gazetime(phase,:))
+
+                           sumTime = obj.outputTable.(gazetime(phase, set))(index) + sumTime;
+
+                       end
+                   
+                       % Set the AOI idenity
+                       obj.finalTable.AOI(obj.tableIndex) = AOISet(AOIid);
+
+                       % Set the AOI Gaze time
+                       obj.finalTable.AOI_Time(obj.tableIndex) = obj.outputTable.(gazetime(phase, AOIid))(index);
+
+                       % Set the hesitancy time
+                       obj.finalTable.HesistencyTime(obj.tableIndex) = obj.outputTable.(hesitancyTime(phase))(index);
+
+                       % Set the total time
+                       obj.finalTable.TotalTrialTime(obj.tableIndex) = sumTime;
+
+                       % Set the average heart rate
+                       obj.finalTable.AverageHeartRate(obj.tableIndex) = obj.outputTable.(heartRate(phase))(index);
+
+                       % Set the average galvanic skin rate
+                       obj.finalTable.AverageGalvanicSkinResponse(obj.tableIndex) = obj.outputTable.(galvanicSkinRate(phase))(index);
+
+                       % Set the inside AOI number of fixations for cues
+                       obj.finalTable.AOIFixationLastInside(obj.tableIndex) = obj.outputTable.(AOIFixationLastInside(phase, AOIid))(index);
+
+                       % Set the outside AOI number of fixations for cues
+                       obj.finalTable.AOIFixationLastOutside(obj.tableIndex) = obj.outputTable.(AOIFixationLastOutside(phase, AOIid))(index);
+               
+                       % Set the total fixation
+                       obj.finalTable.TotalFixation(obj.tableIndex) = obj.outputTable.(totalFixationTime(phase))(index);
+
+                       obj.tableIndex = obj.tableIndex + 1;
+                       
+                   end
+                   
+               end
+               
+           end
+ 
+               
+       end
+       
+       function gazeObject = gazeInRect(~, rect, xPos, yPos)
+           
+           gazeObject = -1;
+           
+           for index = 1:length(rect(:, 1))
+               
+               % Initialize bounding box to current iteration of cue
+               box = rect(index, :);
+               
+               % Set the corresponding X/Y vertices of the bounding box
+               xVertices = [ box(1), box(1), box(3), box(3), box(1)];
+               yVertices = [ box(2), box(4), box(4), box(2), box(2)];
+               
+               in = inpolygon(xPos, yPos, xVertices, yVertices);
+               
+               if in
+                   
+                   gazeObject = index;
+                   
+                   break;
+                   
+               end
+               
+           end
+           
+       end
+       
+       function SaveToFile(obj)
+            
+            % Save header
+            if ~exist(fullfile(obj.dataPath, obj.proccessed, obj.saveAsName),'file')
+            
+                fid = fopen(fullfile(obj.dataPath, obj.proccessed, obj.saveAsName), 'at');
+                
+                if (fid == -1)
+                    
+                    error('Cannot open data file');
+                    
+                else
+                    
+                    obj.PrintHeader(fid);
+                    fclose(fid);
+                    
+                end
+                
+            end
+            
+            % Save data
+            fid = fopen(fullfile(obj.dataPath, obj.proccessed, obj.saveAsName), 'at');
+            
+            if (fid == -1)
+                
+                error('Cannot open data file');
+                
+            else
+                
+                obj.PrintData(fid);
+                fclose(fid);
+                
+            end
+            
+        end
+        
+        
+        function PrintHeader(~, fid)
+           
+            dataFileHeaders = strcat(...            
+            'RecordingGazePointID,\t',...
+            'Condition,\t',...
+            'LearningVsPerformance,\t',...
+            'MazeOrder,\t',...
+            'MazeIdentity,\t',...
+            'AOI,\t',...
+            'AOI_Time,\t',...
+            'HesistencyTime,\t',...
+            'TotalTrialTime,\t',...
+            'AverageHeartRate,\t',...
+            'AverageGalvanicSkinResponse,\t',...
+            'AOIFixationLastInside,\t',...
+            'AOIFixationLastOutside,\t',...
+            'TotalFixation\n'...
+            );
+        
+            fprintf(fid, dataFileHeaders);
+            
+        end
+        
+        function PrintData(obj, fid)
+            
+            tableSize = obj.tableIndex - 1;
+            
+            for trialIndex = 1:tableSize
+
+                disp(trialIndex);
+                disp(obj.finalTable.Condition);
+                fprintf(fid, '%s,\t', obj.finalTable.RecordingGazePointID(trialIndex));
+                fprintf(fid, '%s,\t', obj.finalTable.Condition(trialIndex));
+                fprintf(fid, '%s,\t', obj.finalTable.LearningVsPerformance(trialIndex));
+                fprintf(fid, '%i,\t', obj.finalTable.MazeOrder(trialIndex));
+                fprintf(fid, '%i,\t', obj.finalTable.MazeIdentity(trialIndex));
+                fprintf(fid, '%s,\t', obj.finalTable.AOI(trialIndex));
+                fprintf(fid, '%3.4f,\t', obj.finalTable.AOI_Time(trialIndex));
+                fprintf(fid, '%3.4f,\t', obj.finalTable.HesistencyTime(trialIndex));
+                fprintf(fid, '%3.4f,\t', obj.finalTable.TotalTrialTime(trialIndex));
+                fprintf(fid, '%3.4f,\t', obj.finalTable.AverageHeartRate(trialIndex));
+                fprintf(fid, '%3.4f,\t', obj.finalTable.AverageGalvanicSkinResponse(trialIndex));
+                fprintf(fid, '%i,\t', obj.finalTable.AOIFixationLastInside(trialIndex));
+                fprintf(fid, '%i,\t', obj.finalTable.AOIFixationLastOutside(trialIndex));
+                fprintf(fid, '%i\n', obj.finalTable.TotalFixation(trialIndex));
+                
+            end
+            
+        end
+       
+       %******************** OLD FUNCTIONS******************
+       
+      % preallocate memeory to arrays
        function obj = Preallocate(obj)
            
            % Build cell array
@@ -179,43 +1122,6 @@ classdef user_data
             obj.fixation.duration = zeros(numFixation, 1);
             obj.fixation.start = zeros(numFixation, 1);
             obj.fixation.end = zeros(numFixation, 1);
-           
-       end
-       
-       % prallocate memeory to arrays
-       function obj = PreallocateVectoriztion(varargin)
-           
-           obj = varargin{1};  
-           numRows = varargin{2};  
-     
-           % Raw data set preallocation
-           if nargin > 2
-               
-                varNames = varargin{3};
-                
-               
-               for i  = 1:length(varNames)
-                   obj.(varNames{i}) = zeros(numRows, 1);
-               end  
-            
-           else % cue data set preallocation
-           
-               for i  = 1:length(obj.cue)
-
-                   for j = 1:length(obj.limits)
-                       obj.(obj.cue{i}).(obj.limits{j}) = zeros(numRows, 1);
-                   end
-                   
-               end
-           
-           end
-           
-           % Allocate Screen half location
-           obj.LOC = cell(numRows, 1);
-           obj.LOC(:) = {''};
-           
-           % Allocate the gaze Object (AOI) inside check
-           obj.inside = zeros(1, length(obj.cue));
            
        end
        
@@ -373,582 +1279,6 @@ classdef user_data
            
        end
        
-           % Parse raw data into arays including fixation start and stop times
-       function obj = ParseRawDataVectorization(obj, varNames)
-           
-           % Set the tags to search in input data
-           
-           tag = struct(...
-            'Condition',             'DISTAL',...
-            'Start',                 'START',...
-            'End',                   'END',...
-            'Experiment',            'EXPERIMENT',...
-            'Practice',              'PRACTICE',...
-            'Learn',                 'LEARN',...
-            'Cue',                   '.OBJ',...
-            'Hesitancy',             'TIME',...
-            'HesitancyLearning',     'PRE-TRIAL',...
-            'HesitancyFinal',        'FINAL');
-            
-           % Raw Data
-           
-           % Asign values of table to data variable (Converting table to
-           % matrix)
-           for i  = 1:length(varNames)
-               obj.(varNames{i}) = obj.dataSet.(varNames{i});
-           end
-           
-           % Split user column based on delimiter ';'
-           splitData = cellfun(@(x) split(x, ';'), obj.USER, 'UniformOutput', false);
-
-           % Set number of rows and columns of table
-           obj.outputTable = table('Size', [100 29],...
-               'VariableNames', ["OrderNumber", "MazeNumber", "Cue1"...
-               "Cue2", "LearningStart", "LearningEnd"...
-               "ExperimentStart", "ExperimentEnd", "ExperimentCondition",...
-               "OBJECT_1_LearningGazeTime", "OBJECT_1_ExperimentGazeTime",...
-               "OBJECT_2_LearningGazeTime", "OBJECT_2_ExperimentGazeTime",...
-               "DISTAL_LearningGazeTime", "DISTAL_ExperimentGazeTime",...
-               "HesitancyTimeLearning", "HesitancyTimeExperiment",...
-               "SkyTimeLearning","SkyTimeExperiment",...
-               "GroundTimeLearning","GroundTimeExperiment",...
-               "OBJECT_1_LearnFixationCount","OBJECT_2_LearnFixationCount",...
-               "DISTAL_LearnFixationCount","OBJECT_1_ExpFixationCount",...
-               "OBJECT_2_ExpFixationCount","DISTAL_ExpFixationCount"...
-               "TotalFixationLearning","TotalFixationExperiment"],...
-               'VariableTypes',{'double';'double';'string';'string';...
-               'double';'double';'double';'double';'string';'double';...
-               'double';'double';'double';'double';'double';'double';...
-               'double';'double';'double';'double';'double';'double';...
-               'double';'double';'double';'double';'double';'double';...
-               'double'});
-
-     %{      
-           obj.outputTable = table('Size', [41 15],...
-               'VariableNames', ["ID", "Condition",...
-               "Learning_vs._Testing", "MazeOrder",...
-               "MazeIdentity", "AOI", "AOI_Time", "HesistencyTime"...
-               "Cue2", "LearningStart", "LearningEnd"...
-               "ExperimentStart", "ExperimentEnd",...
-               "OBJECT_1_LearningGazeTime", "OBJECT_1_ExperimentGazeTime",...
-               "OBJECT_2_LearningGazeTime", "OBJECT_2_ExperimentGazeTime",...
-               "DISTAL_LearningGazeTime", "DISTAL_ExperimentGazeTime",],...
-               'VariableTypes',{'double';'double';'string';'string';'double'...
-               ;'double';'double';'double';'string';'double';'double'...
-               ;'double';'double';'double';'double'});
-           %}
- 
-           obj.tableIndex = 1;
-                      
-           % Parse fixation all gazes table, skip headers
-            for j =1:numel(splitData)
-                
-                if numel(splitData{j}) > 1   
-                    
-                    for i = 1:numel(splitData{j})
-                        
-                        % Determine the number of ':' in eah
-                        delimeter = strfind(splitData{j}{i},':');
-                        
-                        if length(delimeter) > 1
-                    
-                            % Adjust the split row to the correct format
-                            newRows = split(splitData{j}(i), ':');
-                            temp = newRows(end);
-                            newRows(end) = [];
-                            newRows = strcat(newRows, ':');
-                            newRows(end) = strcat(newRows{end}, temp);
-                            
-                            preRows = [];
-                            
-                            if i > 1
-                                
-                                preRows = splitData{j}(1:i-1);
-                                
-                            end
-                            
-                            splitData{j} = [preRows; newRows; splitData{j}(i+1:end)];
-                            
-                        end
-                        
-                        
-                    end
-                    
-                    splitData{j} = splitData{j}(~cellfun('isempty', splitData{j}));
-
-%                    disp(splitData{j});
-
-                end
-                    
-                % Split data columns by delimiter ':', csv file
-                if contains(splitData{j}, ':')
-
-                    % Determine if the string is the objects or cue limit
-                    if  contains(splitData{j}, tag.Cue)
-
-                        rowEntry = split(splitData{j}, [":"; "&"]);
-                        obj.outputTable.Cue1(obj.tableIndex) = rowEntry{2};
-                        obj.outputTable.Cue2(obj.tableIndex) = rowEntry{3};
-                        
-                    else
-                        
-%                        splitData = splitData{j}(~cellfun('isempty', splitData{j}));
-                        rowEntry = split(splitData{j}, ':');
-%                        disp('Post removing last element');
-%                        disp(rowEntry);
-
-                        % Loop for each cue
-                        for index  = 1:length(obj.cue)
-
-                            %Parsing XMIN, XMAX, YMIN, YMAX values for all cues
-                           for limitIndex = 1:length(obj.limits)
-                              
-                               % Retrieve row value and convert to string
-                              cueCheck = rowEntry((((index - 1) * numel(obj.limits)) + limitIndex), 2);
-
-                              % Set the object cue value to the 
-                              obj.(obj.cue{index}).(obj.limits{limitIndex})(j) = str2double(cueCheck);
-                              
-                           end
-
-                        end
-                        
- %                       obj.check = (splitData);
-                        eyeLocation = numel(obj.cue) * numel(obj.limits);
-                        
-                        if eyeLocation < numel(rowEntry(:, 2))
- 
-                            obj.LOC(j) = rowEntry((eyeLocation + 1), 2);
-                        
-                        end
-                    
-                    end
-                
-                % Set condition
-                elseif contains(splitData{j}, tag.Condition)
-                    
-                    obj.condition = splitData{j};
-                    
-                % Track start of mazes
-                elseif contains(splitData{j}, tag.Start)
-
-                    if contains(splitData{j}, tag.Experiment, 'IgnoreCase', true)
-                        
-                        % Set the start of the experiment phase
-                        obj.outputTable.ExperimentStart(obj.tableIndex) = j;
- %                       disp(splitData{j});
-                        
-                    else
-                        
-                        % Set the strat of the learning phase
-                        obj.outputTable.LearningStart(obj.tableIndex) = j;
-                        
-                        if contains(splitData{j}, tag.Practice, 'IgnoreCase', true)
-                        
-                            % Set the order number to zero
-                            obj.outputTable.OrderNumber(obj.tableIndex) = 0;
-                            
-                            obj.outputTable.MazeNumber(obj.tableIndex) =  0;
-                        
-                        else
-
-                            % Initialize table maze number index
-                            splitString = split(splitData{j}, ["#", "."]);
-                            obj.outputTable.MazeNumber(obj.tableIndex) =  str2double(splitString(2));
-
-                            % Set the maze order number
-                            pattern = 'NUMBER(\d*)';
-                            orderNum = regexp(splitString(1), pattern, 'tokens');
-                            obj.outputTable.OrderNumber(obj.tableIndex) = str2double(orderNum{1}{1});
-     %                      disp(splitData{j});
-
-                        end
-                        
-                    end
-                
-                % Track end of mazes
-                elseif contains(splitData{j}, tag.End)
-                    
-                    if contains(splitData{j}, tag.Experiment, 'IgnoreCase', true)
-                        
-                        obj.outputTable.ExperimentEnd(obj.tableIndex) = j;
-                        
-                        
-                    else
-                        
-                        obj.outputTable.LearningEnd(obj.tableIndex) = j;
-
-                    end
-                    
-                elseif contains(splitData{j}, tag.Hesitancy)
-                    
- %                    disp(splitData{j});
-                    % Retrieve the value of hesitancy time
-                    hesiPattern = 'OF-(\d*\.?\d+)';
-                    hesiTime = regexp(splitData{j}, hesiPattern, 'tokens');
-  %                  disp(str2double(hesiTime{1}{1}));
-                    
-                    if contains(splitData{j}, tag.HesitancyLearning, 'IgnoreCase', true)
-                        
-  %                      disp(splitData{j});
-  %                      disp(obj.tableIndex);
-                        obj.outputTable.HesitancyTimeLearning(obj.tableIndex) = str2double(hesiTime{1}{1});
-                        
-                        
-                    else
-                        
-                        obj.outputTable.HesitancyTimeExperiment(obj.tableIndex) = str2double(hesiTime{1}{1});
-
-                        % Increment the table index 
-                        obj.outputTable.ExperimentCondition(obj.tableIndex) = obj.condition;
-                        obj.tableIndex = obj.tableIndex + 1;
-                        
-                    end
-                   
-                    
-                else
-                    
-                    % Do nothing
-                    
-                end              
-
-            end
-           
-           
-       end
-       
-       function obj = GazeDurationVectorization(obj)
-
-           index = 1;
-           
-           % Gazes are broken into fixation ID's, where the duration of the
-           % fixation is added to the individual cue gaze times
-
-           while  index < numel(obj.FPOGID)
-               
-               % Find starting index of next FPOGID
-               startingIdIndex = index;
-               
-               % Find ending index current FPOGID
-               
-               while obj.FPOGID(startingIdIndex) == obj.FPOGID(index)
-                   
-                   % Determine the final valid FPOG
-                   if obj.FPOGV(index) == 1
-                       
-                       endingIdIndex = index;
-                       
-                   end
-                   
-                   if index < numel(obj.FPOGID)
-                   
-                       index = index + 1;
-                   
-                   elseif index == numel(obj.FPOGID)
-                       
-                       break;
-                       
-                   end
-                   
-               end
-               
-               % check to ensure that the FPOG is valid
-               if obj.FPOGV(startingIdIndex) ~= 1
-                  
-                   continue;
-                   
-               else
-                   
-                   % Get the current ID gaze duration
-                   duration = obj.FPOGD(endingIdIndex);
-                   
-                   % Get the index set for thr screen halfs
-                   eyeGaze = obj.LOC(startingIdIndex:endingIdIndex);
-
-                   % Remove empty array fields
-                   eyeGaze(eyeGaze == "") = [];
-                   
-                   % Ensure the remainging eyeGaze has values
-                   if isempty(eyeGaze)
-                       
-                       eyeLoc = [];
-                       
-                   else
-                       
-                       % Cross check for apperances of both conditions
-                       skyMatches = matches(eyeGaze, obj.screenHalfs{1});
-                       groundMatches = matches(eyeGaze, obj.screenHalfs{2});
-                       
-                       totalskyMatches = sum(skyMatches);
-                       totalgroundMatches = sum(groundMatches);
-                       
-                       % Set the eye location to the most prominent
-                       % condition
-                       if totalskyMatches < totalgroundMatches
-                           
-                           groundfield = find(groundMatches);
-                           eyeLoc = groundfield(1);
-                           
-                       else
-                           
-                           skyfield = find(skyMatches);
-                           eyeLoc = skyfield(1);
-                           
-                       end
-                       
-                   end
-                   
-                   % Get the average FPOG X/Y for current ID
-                   avgFPOGX = mean(obj.FPOGX(startingIdIndex:endingIdIndex));
-                   avgFPOGY = mean(obj.FPOGY(startingIdIndex:endingIdIndex));
-                   
-                   % Preallocate rects based on cues
-                   boundingBox = zeros(length(obj.cue), length(obj.limits));
-                   
-                   % Construct the rects based on the cue bounding boxes
-                   for i  = 1:length(obj.cue)
-                       
-                       cueData = obj.(obj.cue{i});
-                       
-                       % Retrive bounding box values
-                       xMin = cueData.xMin(startingIdIndex:endingIdIndex);
-                       yMin = cueData.yMin(startingIdIndex:endingIdIndex);
-                       xMax = cueData.xMax(startingIdIndex:endingIdIndex);
-                       yMax = cueData.yMax(startingIdIndex:endingIdIndex);
-                       
-                       % remove zero entries
-                       xMin(xMin==0)=[];
-                       yMin(yMin==0)=[];
-                       xMax(xMax==0)=[];
-                       yMax(yMax==0)=[];
-                       
-                       % Get average values
-                       avgXMIN = mean(xMin);
-                       avgYMIN = mean(yMin);
-                       avgXMAX = mean(xMax);
-                       avgYMAX = mean(yMax);
-
-                       boundingBox(i, :) = [avgXMIN, avgYMIN, avgXMAX, avgYMAX];
-        
-                   end
-                   
-                   % Determine if the FPOG was within a bounding box, which
-                   % which bounding box eye lie within
-                   AOI = gazeInRect(obj, boundingBox, avgFPOGX, avgFPOGY);
-                   
-                   %  Collect the column name for setting the values
-                   columnNames = obj.outputTable.Properties.VariableNames;
-
-                   for block = 1:length(obj.outputTable.OrderNumber)
-                   
-                       % Initialize maze block indices
-                       learningStart = obj.outputTable.LearningStart(block);
-                       learningEnd = obj.outputTable.LearningEnd(block);
-                       ExpStart = obj.outputTable.ExperimentStart(block);
-                       ExpEnd = obj.outputTable.ExperimentEnd(block);
-                           
-                       % Allocating duration 
-                       if learningStart <= startingIdIndex && endingIdIndex <= learningEnd
-
-                           % Ensure the FPOG was within one of the the bounding boxes
-                           if AOI ~= -1 
-
-                               % Count if gaze is ener new AOI
-                               if obj.inside(AOI) == 0
-               
-                                   obj.inside(AOI) = 1;
-                                   count = 1;
-           
-                               else
-                                   
-                                  count = 0;
-           
-                               end
-                       
-                               % Building column names
-                               learningGaze = strcat(obj.cue(AOI), '_LearningGazeTime');
-                               fixationAOI = strcat(obj.cue(AOI), '_LearnFixationCount');
-
-                               % Find column in table
-                               columnGaze = contains(columnNames, learningGaze);
-                               columnFixation = contains(columnNames, fixationAOI);
-                               
-                               % Add duration to time block
-                               obj.outputTable.(columnNames{columnGaze})(block) = obj.outputTable.(columnNames{columnGaze})(block) + duration;
-
-                               % Add to fixation count
-                               obj.outputTable.(columnNames{columnFixation})(block) = obj.outputTable.(columnNames{columnFixation})(block) + count;
-                               
-                           elseif ~isempty(eyeLoc) 
-                               
-                               % Reset object
-                               obj.inside = [0,0,0];
-                       
-                               % Set the eye location based on user data
-                               eyeLoc = eyeGaze(1);
-                               
-                               % Building column name
-                               eyeLoc = strcat(eyeLoc,'TimeLearning');
-                               
-                               % Find column in table
-                               column = contains(columnNames, eyeLoc, 'IgnoreCase', true);
-                               
-                               % Add duration to time block
-                               obj.outputTable.(columnNames{column})(block) = obj.outputTable.(columnNames{column})(block) + duration;
-                               
-                           else
-                               
-                               % Do nothing
-                               
-                           end
-
-                           % Find total learning fixationa column in table
-                           columnTotalFix = contains(columnNames, "TotalFixationLearning");
-                           
-                           % Add to total number of fixations
-                           obj.outputTable.(columnNames{columnTotalFix})(block) = obj.outputTable.(columnNames{columnTotalFix})(block) + 1;
-                               
-
-                       elseif ExpStart <= startingIdIndex && endingIdIndex <= ExpEnd
-%                               helperStr = strcat(obj.cue(gazeObject), '...........', string(obj.FPOGID(endingIdIndex)));
-%                               disp(helperStr);
-
-                           % Ensure the FPOG was within one of the the bounding boxes
-                           if AOI ~= -1 
-
-                               % Count if gaze is ener new AOI
-                               if obj.inside(AOI) == 0
-               
-                                   obj.inside(AOI) = 1;
-                                   count = 1;
-           
-                               else
-                                   
-                                  count = 0;
-           
-                               end
-                               
-                               % Building column names
-                               expGaze = strcat(obj.cue(AOI), '_ExperimentGazeTime');
-                               fixationAOI = strcat(obj.cue(AOI), '_ExpFixationCount');
-                               
-                               % Find column in table
-                               columnGaze = contains(columnNames, expGaze);
-                               columnFixation = contains(columnNames, fixationAOI);
-
-                               % Add duration to time block
-                               obj.outputTable.(columnNames{columnGaze})(block) = obj.outputTable.(columnNames{columnGaze})(block) + duration;
-
-                               % Add duration to time block
-                               obj.outputTable.(columnNames{columnFixation})(block) = obj.outputTable.(columnNames{columnFixation})(block) + count;
-                               
-                           elseif ~isempty(eyeLoc) % Set the eye  location to sky or ground
-                               
-                               % Reset object
-                               obj.inside = [0,0,0];
-                       
-                                % Set the eye location based on user data
-                               eyeLoc = eyeGaze(1);
-                               
-                               % Building column name
-                               eyeLoc = strcat(eyeLoc,'TimeExperiment');
-                               
-                               % Find column in table
-                               column = contains(columnNames, eyeLoc, 'IgnoreCase', true);
-                               
-                               % Add duration to time block
-                               obj.outputTable.(columnNames{column})(block) = obj.outputTable.(columnNames{column})(block) + duration;
-                               
-                           else
-                               
-                               % Do Nothing
-                               
-                           end
-                           
-                           % Find total experiment fixationa column in table
-                           columnTotalFix = contains(columnNames, "TotalFixationExperiment");
-                           
-                           % Add to total number of fixations
-                           obj.outputTable.(columnNames{columnTotalFix})(block) = obj.outputTable.(columnNames{columnTotalFix})(block) + 1;
-                           
-                       else
-
-                           % do nothing
-
-                       end
-                     
-                   end
-                   
-               end
-               
-           end
-           
-       end
-       
-       function obj = ConstructfinalTable(obj)
-           
-           % Set number of rows and columns of table
-           obj.outputTable = table('Size', [100 21],...
-               'VariableNames', ["ID", "Condition", "Learning_vs.Performance"...
-               "MazeOrder", "MazeIdentity", "AOI", "AOI_Time",...
-               "HesistencyTime", "TotalTrialTime", "AverageHeartRate",...
-               "AverageGalvanicSkinResponse",...
-               "OBJECT_1_LearningGazeTime", "OBJECT_1_ExperimentGazeTime",...
-               "OBJECT_2_LearningGazeTime", "OBJECT_2_ExperimentGazeTime",...
-               "DISTAL_LearningGazeTime", "DISTAL_ExperimentGazeTime",...
-               "HesitancyTimeLearning", "HesitancyTimeExperiment",...
-               "SkyTimeLearning","SkyTimeExperiment",...
-               "GroundTimeLearning","GroundTimeExperiment"],...
-               'VariableTypes',{'double';'double';'string';'string';...
-               'double';'double';'double';'double';'string';'double';...
-               'double';'double';'double';'double';'double';'double';...
-               'double';'double';'double'});
-
-     %{      
-           obj.outputTable = table('Size', [41 15],...
-               'VariableNames', ["ID", "Condition",...
-               "Learning_vs._Testing", "MazeOrder",...
-               "MazeIdentity", "AOI", "AOI_Time", "HesistencyTime"...
-               "Cue2", "LearningStart", "LearningEnd"...
-               "ExperimentStart", "ExperimentEnd",...
-               "OBJECT_1_LearningGazeTime", "OBJECT_1_ExperimentGazeTime",...
-               "OBJECT_2_LearningGazeTime", "OBJECT_2_ExperimentGazeTime",...
-               "DISTAL_LearningGazeTime", "DISTAL_ExperimentGazeTime",],...
-               'VariableTypes',{'double';'double';'string';'string';'double'...
-               ;'double';'double';'double';'string';'double';'double'...
-               ;'double';'double';'double';'double'});
-           %}
- 
-               
-       end
-       
-       function gazeObject = gazeInRect(~, rect, xPos, yPos)
-           
-           gazeObject = -1;
-           
-           for index = 1:length(rect(:, 1))
-               
-               % Initialize bounding box to current iteration of cue
-               box = rect(index, :);
-               
-               % Set the corresponding X/Y vertices of the bounding box
-               xVertices = [ box(1), box(1), box(3), box(3), box(1)];
-               yVertices = [ box(2), box(4), box(4), box(2), box(2)];
-               
-               in = inpolygon(xPos, yPos, xVertices, yVertices);
-               
-               if in
-                   
-                   gazeObject = index;
-                   
-                   break;
-                   
-               end
-               
-           end
-           
-       end
-       
        function obj = GazeDuration(obj)
            
            %{ 
@@ -984,7 +1314,7 @@ classdef user_data
                    
                    initMazeTime = [obj.maze{(i), 5} obj.maze{(i), 7} obj.maze{(i), 9}];
                    object = [obj.OBJECT_1 obj.OBJECT_2 obj.DISTAL];
-                   x =  obj.FPOGX;
+                   x = obj.FPOGX;
                    y = obj.FPOGY;
                    
                    mazeTime = Gazing(obj, object, initMazeTime, x, y, j, time);
@@ -1026,7 +1356,30 @@ classdef user_data
            
        end
        
-       
+       % Open the file from the given data path, for text scan
+       function [InputData] = OpenFiles(~, path)
+           
+           InputData = {}; % Initialize incase a error occurs
+           
+           % Open file path
+           fid = fopen(path);
+
+           % Error check if the file was able to open
+           if fid == -1
+
+                disp('Error, unable to open data file, check file name and location');
+
+           else
+               
+               temp = textscan(fid, '%s', 'Delimiter', '\r');
+               temp = temp{1};
+               InputData = temp;
+               fclose(fid);
+
+              
+           end
+           
+       end
        
    end
    

@@ -185,6 +185,7 @@
             
             skyboxSet = ["dust" "haze" "humble" "quirk" "skybox" "trance" "valley"];
             
+            % Set the skybox set for the background
             box = skyboxSet(5);
             
             obj = obj.AddTextureSkybox(GlTexture(obj.texPath, sprintf('Skyboxes\\%s\\%s_rt.jpg', box, box)));
@@ -929,6 +930,7 @@
                   
                   % Costruct string to send to Gazepoint
                   strLog = strcat(...
+                      'CODE:1;',...
                       gpStr.XMin, gpStr.CueOneXMin,...
                       gpStr.XMax, gpStr.CueOneXMax,...
                       gpStr.YMin, gpStr.CueOneYMin,...
@@ -945,7 +947,7 @@
                       );
                   
                   % Send user data to Gazepoint user column
-                  ipClient.Log(strLog);
+                  ipClient.Log(strLog, 'Data');
 
               end
        

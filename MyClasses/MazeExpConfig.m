@@ -26,6 +26,7 @@ classdef MazeExpConfig
         pracRun                       = 1;
         AITour                        = 0;
         singleMaze                    = 0;
+        select                        = 0;
         gazePoint                     = 0;
         ipAddress                     = '172.19.1.229';
         

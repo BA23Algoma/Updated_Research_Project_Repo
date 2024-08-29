@@ -14,7 +14,7 @@ classdef GazeLocation
         
         function obj = GazeLocation(numWalls)
 
-            % Initialize an array to hold the new wall values
+            % Initialize total number f walls
             obj.nWalls = numWalls;
             
         end
@@ -43,7 +43,7 @@ classdef GazeLocation
             % Loop through both edges of wall
             for edge = 1:vertexes
   
-                % Project 3d corrdinates to 2D screen coordiantes
+                % Project 3D corrdinates to 2D screen coordiantes
                 [obj.X(wallIndex, edge), obj.Y(wallIndex, edge), obj.Z(wallIndex, edge)] = gluProject(xPoint(edge), zPoint, yPoint(edge),...
                     modelviewMatrix, projectionMatrix, viewportMatrix);
              
@@ -54,11 +54,9 @@ classdef GazeLocation
         % Normailize values for gazepoint ((0,0) Top left, (1,1) Bottom
         % right)            
         obj.X = obj.X / double(viewportMatrix(3));
-        
-        % Because of caretian plan. Y min is max while Y max is min
         obj.Y = obj.Y / double(viewportMatrix(4));
   
-        % Set value to have intersect line segment will run vertically
+        % Set value to have line segment will run vertically at eye FPOGX
         top = 1;
         bottom = 0;
         

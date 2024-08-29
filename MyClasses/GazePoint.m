@@ -229,17 +229,36 @@ classdef GazePoint
          end
         
         % Functions sends data from matlab to gazepoint user column
-        function obj = Log(obj, command)
+        function obj = Log(obj, command, type)
             
-            line_com = strcat('<SET ID="USER_DATA" VALUE="', command,'" DUR="1"/>\r\n');
+            switch type
+                
+                case 'Data'
+            
+                    line_com = strcat('<SET ID="USER_DATA" VALUE="', command,'" />\r\n');
+            
+                case 'Marker'
+            
+                    line_com = strcat('<SET ID="USER_DATA" VALUE="', command,'" DUR="1"/>\r\n');
+                    
+            end
             
             pnet(obj.client, 'printf',line_com);
+            
+            % Send marker again to ensure data is not lost
+            if strcmp(type, 'Marker')
+                pause(0.1);
+                pnet(obj.client, 'printf',line_com);
+            end
             
         end
         
         % Close the tcp connection
         function obj = Close(obj)
             
+            % Blank Gazepoint to ensure data is not continuously being
+            % logged
+            obj.Log('', type);
             pnet('closeall');
             
         end

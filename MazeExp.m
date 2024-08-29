@@ -149,18 +149,21 @@
         % Send experiment condition to Gazepoint
         if  ipClient.client ~= -1
             
+            userID = strcat('USER ID: ', num2str(p.participantId));
+            ipClient.Log(userID,'Marker');
+            WaitSecs(0.5);
             
             if p.cue
                 
-                strGP = 'Proximal and Distal Condition';
+                strGP = 'Proximal and Distal';
                 
             else
                 
-                strGP = 'Distal Condition';
+                strGP = 'Distal';
                 
             end
           
-            ipClient.Log(strGP);
+            ipClient.Log(strGP, 'Marker');
             
         end
         
@@ -199,7 +202,7 @@
         if  ipClient.client ~= -1
             
             strGPEnd = strcat('End of', strcat(' ', mazeFileName));
-            ipClient.Log(strGPEnd);
+            ipClient.Log(strGPEnd, 'Marker');
             
         end
         
@@ -297,8 +300,8 @@
         if  ipClient.client ~= -1
  
             strGP = strcat('Start Practice Block Run Experiment', strcat('-', practiceMaze));
-            ipClient.Log(strGP);
-
+            ipClient.Log(strGP, 'Marker');
+            
         end
         
         splashScreen.ShowSplashScreen(render, inputDevice, 'Enter_ExpInstructions1.jpg', 'Textures');
@@ -331,7 +334,7 @@
                 if  ipClient.client ~= -1
                     
                     strGP = strcat('Start Practice Block Run Learning', strcat('-', practiceMaze));
-                    ipClient.Log(strGP);
+                    ipClient.Log(strGP, 'Marker');
 
                 end
 
@@ -341,15 +344,12 @@
                 if  ipClient.client ~= -1
  
                     strGP = strcat('End Practice Block Run Learning', strcat('-', practiceMaze));
-                    ipClient.Log(strGP);
+                    ipClient.Log(strGP, 'Marker');
                     WaitSecs(.1);
                     strHesTime = strcat('Pre-Trial hesitancy time of', strcat('-', num2str(hesitantTime))); 
-                    ipClient.Log(strHesTime);
+                    ipClient.Log(strHesTime, 'Marker');
                     
                 end
-                
-                disp('Player hesitancy time....');
-                disp(hesitantTime);
                               
                 % WaitSecs(.25);
                 rating.RatingSelect(render, inputDevice, 'RCJ'); 
@@ -362,7 +362,7 @@
  
                 % Notify end of run to gazepoint
                 strGP = strcat('Start Practice Block Run Experiment', strcat('-', practiceMaze));
-                ipClient.Log(strGP);
+                ipClient.Log(strGP, 'Marker');
 
             end
             
@@ -381,15 +381,12 @@
  
                 % Notify end of run to gazepoint
                 strGP = strcat('End Practice Block Run Experiment', strcat('-', practiceMaze));
-                ipClient.Log(strGP);
+                ipClient.Log(strGP, 'Marker');
                 WaitSecs(.1);
                 strHesTime = strcat('Final hesitancy time of', strcat('-', num2str(hesitantTime)));
-                ipClient.Log(strHesTime);
+                ipClient.Log(strHesTime,  'Marker');
 
             end
-            
-            disp('Player hesitancy time....');
-            disp(hesitantTime);
             
             %         WaitSecs(.25);    
             rating.RatingSelect(render, inputDevice, 'RCJ');
@@ -503,7 +500,7 @@
                         if  ipClient.client ~= -1
                             
                             strGP = strcat('Start Learning Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
-                            ipClient.Log(strGP);
+                            ipClient.Log(strGP, 'Marker');
                             
                         end
         
@@ -519,19 +516,16 @@
                         rating.RatingSelect(render, inputDevice, 'RCJ');
                         
                         if  ipClient.client ~= -1
- 
+
                             % Notify end of run to gazepoint
                             strGP = strcat('End Learning Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
-                            ipClient.Log(strGP);
+                            ipClient.Log(strGP,  'Marker');
                             WaitSecs(.1);
                             strHesTime = strcat('Pre-Trial hesitancy time of', strcat('-', num2str(hesitantTime))); 
-                            ipClient.Log(strHesTime);
+                            ipClient.Log(strHesTime,  'Marker');
                              
                             
                         end
-                        
-                        disp('Player hesitancy time....');
-                        disp(hesitantTime);
                                          
                     end
 
@@ -549,11 +543,11 @@
                             
                         strGP = strcat('Start Experiment Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
                         strCue = strcat('Object cues: ', strcat(' ',maze.perCue.obj),' &', strcat(' ',maze.perCue.objTwo));
-                        ipClient.Log(strGP);
+                        ipClient.Log(strGP, 'Marker');
                         WaitSecs(0.1);
-                        ipClient.Log(strCue);
+                        ipClient.Log(strCue, 'Marker');
                         WaitSecs(0.1);  
-                            
+                             
                     end
 
                     [coordPoll, isCompleteFlag, stats, hesitantTime] = maze.Explore(render, player, inputDevice, p.coordPollTimeLimit, p.coordPollInterval, p.nowNum, ipClient);
@@ -562,15 +556,12 @@
                     if  ipClient.client ~= -1
                             
                         strGP = strcat('End Experiment Block Number', strcat(' ', num2str(mazeNum)), '-', mazeFileName);
-                        ipClient.Log(strGP);
+                        ipClient.Log(strGP, 'Marker');
                         WaitSecs(.1);
                         strHesTime = strcat('Final hesitancy time of', strcat('-', num2str(hesitantTime))); 
-                        ipClient.Log(strHesTime);
+                        ipClient.Log(strHesTime, 'Marker');
                             
                     end
-                    
-                    disp('Player hesitancy time....');
-                    disp(hesitantTime);
                     
                     coordPoll.SaveToFile(p.dataPath, p.participantId, maze.filePrefix, 'user');
 
