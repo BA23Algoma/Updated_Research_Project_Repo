@@ -323,11 +323,11 @@ classdef Maze
                 
                 normalWallIndex = 1;
                 targetWallIndex = 1;
+                
                 fgets(fid); % Skip comment line
 
                 for wallIndex = 1:obj.nWalls
 
-                    
                     s = fgets(fid);
                     [vertices,~, ~, nextIndex]= sscanf(s, '%f');
                     
@@ -364,7 +364,7 @@ classdef Maze
                     end
                     
                     % Collect all the walls into 1 array
-                    obj.completeWallArray(1:obj.nWalls) = thisWall;
+                    obj.completeWallArray(wallIndex) = thisWall;
                     
                 end
                 

@@ -229,7 +229,7 @@ classdef GazePoint
          end
         
         % Functions sends data from matlab to gazepoint user column
-        function obj = Log(obj, command, type)
+        function obj = Log(obj, command, type, switchCode)
             
             switch type
                 
@@ -238,18 +238,76 @@ classdef GazePoint
                     line_com = strcat('<SET ID="USER_DATA" VALUE="', command,'" />\r\n');
             
                 case 'Marker'
-            
-                    line_com = strcat('<SET ID="USER_DATA" VALUE="', command,'" DUR="1"/>\r\n');
+
+                    code = switchCode;
+                    
+                    switch code
+                        
+                        case 'userID'
+                            
+                            lineCommand = strcat('USER ID-', command);
+                            
+                        case 'CueList'
+                            
+                            lineCommand = strcat('OBJECT CUES:', command);
+                            
+                        case 'Condition'
+                            
+                            lineCommand = command;
+
+                        case 'Beginning'
+                            
+                            lineCommand = strcat('BEGINNING OF BLOCK-', command);
+
+                        case 'StartPractice'
+                            
+                            lineCommand = strcat('START PRACTICE BLOCK RUN-',command,'-PRACTICEMAZE');
+
+                        case 'EndPractice'
+                            
+                            lineCommand = strcat('END PRACTICE BLOCK RUN-', command,'-PRACTICEMAZE');
+
+                        case 'StartLearning'
+                            
+                            lineCommand = strcat('START LEARNING BLOCK NUMBER-', command);
+
+                        case 'EndLearning'
+                            
+                            lineCommand = strcat('END LEARNING BLOCK NUMBER-', command);
+                            
+                        case 'StartPerformance'
+                            
+                            lineCommand = strcat('START EXPERIMENT BLOCK NUMBER-', command);
+
+                        case 'EndPerformance'
+                            
+                            lineCommand = strcat('END EXPERIMENT BLOCK NUMBER-', command);
+
+                        case 'PreHesitancy'
+                            
+                            lineCommand = strcat('PRE-TRIAL HESITANCY TIME OF-', command);
+                            
+                        case 'PostHesitancy'
+                            
+                            lineCommand = strcat('FINAL HESITANCY TIME OF-', command);
+                            
+                        otherwise
+                            
+                            lineCommand = command;
+
+                    end
+                    
+                    line_com = strcat('<SET ID="USER_DATA" VALUE="', lineCommand,'" DUR="1"/>\r\n');
                     
             end
             
             pnet(obj.client, 'printf',line_com);
             
             % Send marker again to ensure data is not lost
-            if strcmp(type, 'Marker')
-                pause(0.1);
-                pnet(obj.client, 'printf',line_com);
-            end
+%            if strcmp(type, 'Marker')
+%                pause(0.1);
+%                pnet(obj.client, 'printf',line_com);
+%            end
             
         end
         
@@ -258,7 +316,7 @@ classdef GazePoint
             
             % Blank Gazepoint to ensure data is not continuously being
             % logged
-            obj.Log('', type);
+            obj.Log('', 'Marker', '');
             pnet('closeall');
             
         end

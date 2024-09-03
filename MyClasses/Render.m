@@ -797,6 +797,20 @@
                 % check to see if the line of sight to moon is blcoked by
                 % wall
                 blocked = Occlusion.IsMoonBlocked(player, distalCue, maze.normalWallArray, obj.eyeLevel, sphereCenter(2), obj.wallHeight);
+              
+                % Mouse to check values
+%                [Xmouse, Ymouse, ~] = GetMouse(obj.viewportPtr);
+%                Xmouse = Xmouse / double(viewport(3));
+%                Ymouse = Ymouse / double(viewport(4));
+%                Ymouse = 1 - Ymouse;
+%                mouse = [Xmouse Ymouse];
+            
+%                eyeLocation = GazeLocation(maze.nWalls);
+%                gaze = eyeLocation.EyeFocus(viewport, modelView, projectionView, maze, obj.wallHeight, mouse);
+       
+%                disp('Mouse....');
+%                disp([Xmouse Ymouse]);
+
                 
                 % Send data to gazepoint
                 if ipClient.client ~= -1
@@ -930,7 +944,6 @@
                   
                   % Costruct string to send to Gazepoint
                   strLog = strcat(...
-                      'CODE:1;',...
                       gpStr.XMin, gpStr.CueOneXMin,...
                       gpStr.XMax, gpStr.CueOneXMax,...
                       gpStr.YMin, gpStr.CueOneYMin,...
@@ -956,7 +969,6 @@
             Screen('Flip', obj.viewportPtr);          
             
         end
-
 
         
         function obj = set.perspectiveAngle(obj, PerspectiveAngle)
