@@ -6,8 +6,8 @@
 0.125000	% playerBodyRadius
 0.0300000	% playerDeltaUnitPerFrame
 1.2500000	% playerDeltaDegPerFrame
-0.075000	% tourDeltaUnitPerFrame
-1.2500000	% tourDeltaDegPerFrame
+0.02000	% tourDeltaUnitPerFrame
+1.2200000	% tourDeltaDegPerFrame
 1		% viewPoint (1 = FIRST PERSON; 2 = THIRD PERSON)
 60.000000	% frameRate
 55.000000	% perspectiveAngle
@@ -22,4 +22,5 @@
 0		% AITour
 0		% singleMaze
 0       % gazePoint
-'172.19.1.229'       % IP Address
+'127.0.0.1'       % IP Address
+0       % dynamicFOV

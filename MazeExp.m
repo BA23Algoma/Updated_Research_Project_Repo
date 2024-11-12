@@ -1,4 +1,4 @@
-function MazeExp                    
+   function MazeExp                    
                                                                      
      %     %      GUI modifiable parameters                                  
     %     p .participantI d               = 0;      
@@ -24,7 +24,7 @@ function MazeExp
     %     p.cue                           = 1; % Proximal
     %     p.gazePoint                     = 0;
  
-    %add 2007 file to path
+    %add 2007 file to path`
     setPath = what('MatlabWindowsFilesR2007a');
     addpath(setPath.path);
     addpath(pathdef);
@@ -110,7 +110,7 @@ function MazeExp
        
     % Render
     render = Render([p.screenWidth p.screenHeight p.frameRate]);
-    render = render.InitMazeWindow(p.perspectiveAngle, p.eyeLevel, p.viewPoint, p.cue);
+    render = render.InitMazeWindow(p.perspectiveAngle, p.eyeLevel, p.viewPoint, p.cue, p.dynamicFOV);
     p.nRows = render.nRows;
     p.nCols = render.nCols;         
     
@@ -133,7 +133,7 @@ function MazeExp
         % Close any previously left open conections
         pnet('closeall');
         
-        % 172.19.15.77
+        % 127.0.0.1
         ipClient = GazePoint(p.ipAddress, 4242);
         
         WaitSecs(0.5);
@@ -468,7 +468,9 @@ function MazeExp
                 % RCJ
 
             if p.blockRunFlag
-
+                
+                % Number of mazes between each break
+                breakNum = ceil(expSchedule.nMazes / 3);
 
                 for labelIndex = randperm(expSchedule.nMazesPerBlock)
 
@@ -482,7 +484,7 @@ function MazeExp
 
                     maze = Maze(mazeFileName, p.checkCollisionFlag);
                     
-                    if mazeNum == (expSchedule.nMazes / 2) &&  ipClient.client ~= -1
+                    if (rem(mazeNum,breakNum) == 0) &&  ipClient.client ~= -1
                         
                         % Big break before continuing experiment
                         % splashScreen.ShowSplashScreen(render, inputDevice, 'Instructions1.jpg', 'Textures');

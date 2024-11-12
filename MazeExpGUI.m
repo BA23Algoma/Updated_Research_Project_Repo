@@ -22,7 +22,7 @@ function varargout = MazeExpGUI(varargin)
     
     % Edit the above text to modify the response to help MazeExpGUI
     
-    % Last Modified by GUIDE v2.5 25-Jan-2024 21:34:40
+    % Last Modified by GUIDE v2.5 02-Nov-2024 21:15:56
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -161,6 +161,27 @@ function MazeExpGUI_OpeningFcn(hObject, eventdata, handles, varargin)
         
     end
     
+    if p.dynamicFOV == 0
+        
+        set(handles.DynamicFOVButtonGroup, 'SelectedObject', handles.NoneButton);
+        handles.DynamicFOVButtonGroup = 0;
+        
+    elseif p.dynamicFOV == 1
+        
+        set(handles.DynamicFOVButtonGroup, 'SelectedObject', handles.FocusedButton);
+        handles.DynamicFOVButtonGroup = 1;
+        
+    elseif p.dynamicFOV == 2
+        
+        set(handles.DynamicFOVButtonGroup, 'SelectedObject', handles.GradientButton);
+        handles.DynamicFOVButtonGroup = 2;
+            
+    else
+        
+        error('Unknown Dynamic FOV setup');
+        
+    end
+    
     handles.isExit = 1;
     
     % Update handles structure
@@ -204,6 +225,7 @@ function varargout = MazeExpGUI_OutputFcn(hObject, eventdata, handles)
         p.mazeRunFile                   = get(handles.mazeSelect,'Value');
         p.gazePoint                     = handles.gazePoint;
         p.ipAddress                     = get(handles.ipAddress, 'string');
+        p.dynamicFOV                    = handles.DynamicFOVButtonGroup;
 
         % Maze type selection
         type = get(handles.mazeRunType,'Value');
@@ -620,7 +642,7 @@ function inputDevice_SelectionChangeFcn(hObject, eventdata, handles)
     % hObject    handle to the selected object in inputDevice
     % eventdata  structure with the following fields (see UIBUTTONGROUP)
     %	EventName: string 'SelectionChanged' (read only)
-    %	OldValue: handle of the previously selected object or empty if none was selected
+    %	OldValue: handle of the previously selected object or empty if nonebutton was selected
     %	NewValue: handle of the currently selected object
     % handles    structure with handles and user data (see GUIDATA)
     
@@ -661,7 +683,7 @@ function tourHand_SelectionChangeFcn(hObject, eventdata, handles)
     % hObject    handle to the selected object in tourHand
     % eventdata  structure with the following fields (see UIBUTTONGROUP)
     %	EventName: string 'SelectionChanged' (read only)
-    %	OldValue: handle of the previously selected object or empty if none was selected
+    %	OldValue: handle of the previously selected object or empty if nonebutton was selected
     %	NewValue: handle of the currently selected object
     % handles    structure with handles and user data (see GUIDATA)
     
@@ -806,7 +828,7 @@ function pov_SelectionChangeFcn(hObject, eventdata, handles)
     % hObject    handle to the selected object in pov
     % eventdata  structure with the following fields (see UIBUTTONGROUP)
     %	EventName: string 'SelectionChanged' (read only)
-    %	OldValue: handle of the previously selected object or empty if none was selected
+    %	OldValue: handle of the previously selected object or empty if nonebutton was selected
     %	NewValue: handle of the currently selected object
     % handles    structure with handles and user data (see GUIDATA)
     
@@ -1058,7 +1080,7 @@ end
 
 
 
-% --- Executes on key press with focus on mazeRunType and none of its controls.
+% --- Executes on key press with focus on mazeRunType and nonebutton of its controls.
 function mazeRunType_KeyPressFcn(hObject, eventdata, handles)
 % hObject    handle to mazeRunType (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
@@ -1135,15 +1157,15 @@ function gazePoint_SelectionChangedFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 switch get(eventdata.NewValue,'Tag') % Get Tag of selected object.
         
-        case 'ActivateGazePoint'
+    case 'ActivateGazePoint'
             
-            handles.gazePoint = 1;
+        handles.gazePoint = 1;
+        
+    case 'DeactivateGazePoint'
             
-        case 'DeactivateGazePoint'
-            
-            handles.gazePoint = 0;
-            
-    end
+        handles.gazePoint = 0;
+    
+end
     
     guidata(hObject, handles);
     
@@ -1186,3 +1208,38 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 end
+
+% --------------------------------------------------------------------
+function DynamicFOVButtonGroup_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to DynamicFOVButtonGroup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+end
+
+% --- Executes when selected object is changed in DynamicFOVButtonGroup.
+function DynamicFOVButtonGroup_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in DynamicFOVButtonGroup 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+switch get(eventdata.NewValue,'Tag') % Get Tag of selected object.
+        
+    case 'NoneButton'
+            
+        handles.DynamicFOVButtonGroup = 0;
+        
+    case 'FocusedButton'
+            
+        handles.DynamicFOVButtonGroup = 1;
+        
+    case 'GradientButton'
+            
+        handles.DynamicFOVButtonGroup = 2;
+    
+end
+    
+    guidata(hObject, handles);
+    
+end
+

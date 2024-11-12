@@ -1,0 +1,30 @@
+Participant ID — Anonymized user ID provided by the tester
+
+Tour 
+Direction — Indicates the direction for the AI user guide tour of mazes
+Sets the translational and rotation speed of the AI tour
+
+Graphics — Presets based on the screen dimensions, frame rate, along with the in maze eye level and viewing perspective
+
+Avatar — Sets the in maze user speed, rotation speed (radial velocity), and body radius (used in calculating tripped wires, wall collisions, etc…)
+
+Input Device — Keyboard relates to arrow and enter button, addition button include
+S - used to skip maze, data is still recorded to data file
+Esc — exits the maze program
+C — Used with gazepoint to re-calibrate program. Only available during the break screens between mazes.
+P — Used to print screen the current maze, image can be found in the Objects/Screenshots folder
+
+Point-of-View — Experiment is preset for 1st person view, but the experiment can be toggle to provide 3rd person bird view of experiment. (General for debugging purposes).
+
+Trial Schedule — Sets the numbers practice trials, blocks divides the total number of mazes found in the mazes folders and divides them into the number of blocks. The number of mazes are evenly distributed. A number of blocks that does not provide an even distribution will cause an error.
+Maze Run Type
+Presents include:
+Experiment — Learning and Performance mazes performed by user
+AI Tour — Learning phase conducted by AI, while performance conducted by user
+No tour — Only performance mazes performed by the user
+Select Mazes — allows the user to use the drop menu below to run a specific maze. The trial only contain the performance trial of the selected mazes. The number maze correspond to the number mazes in the maze folder of the project file.
+Cues — Two condition available, proximal and distal condition (D&P) and distal only (D). The GUI is present to the D&P condition.
+
+Time — Sets the time limits of both the learning maze and the performance trial. The polling interval sets the interval at which data is collected.
+
+GazePoint — Used to setup experiment for eye tracking. Both Gazepoint analysis and control must be actively running before starting experiment. The ip address is taken from Gazepoint control settings menu. 

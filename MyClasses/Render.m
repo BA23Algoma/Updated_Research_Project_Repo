@@ -32,6 +32,11 @@
         shaderProgram;
         minReq              = 0.001; % Min intersect to be viewable
         wallHeight          = 0.70;
+        initFOV             = [0 0.9]; % [ScopeType screenFOVSize]
+        restrictedFOV;
+        restrictedChannel;
+        restrictStart;
+        
     end
     
     properties (SetAccess = protected)
@@ -171,6 +176,12 @@
                 
             end
             
+            if nargin > 4
+
+               obj.initFOV(1) = varargin{5};
+                
+            end
+            
             obj.texNumId = zeros(1,100);
             
             obj = OpenPtbWindow(obj);
@@ -198,6 +209,50 @@
             % Distal feature (moon)
             if obj.distalCueFlag
                 obj = obj.AddTextureDistalCue('moon.jpg',  obj.viewportPtr);
+            end
+            
+            % Build FOV restriction window
+            if obj.initFOV(1) ~= 0
+
+                % Set the size of the FOV
+                circleRadius = obj.initFOV(2) * ((min(obj.viewportRect(3), obj.viewportRect(4))) / 2);
+
+                % Enable alph blending for tranparency
+                Screen('BlendFunction', obj.viewportPtr, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+
+                % Generate radial distance matrix from center
+                [gridX, gridY] = meshgrid(1:obj.viewportRect(3), 1:obj.viewportRect(4));
+                distFromCenter = sqrt((gridX - obj.x0).^2 + (gridY -  obj.y0).^2);
+                
+                switch obj.initFOV(1)
+                    case 1 % Focused scope
+                
+                    % Define the alpha layer with a transparent center and
+                    % opaque outer region
+                    alphaChannel = uint8(255 * ones(obj.viewportRect(4), obj.viewportRect(3)));
+                    
+                    % Apply transparency gradient only within the desired
+                    % circular region
+                    alphaChannel(distFromCenter <= circleRadius) = uint8(255 * distFromCenter(distFromCenter <= circleRadius) / circleRadius) ;
+                    
+                    case 2 % Gradient scope
+                    
+                    % Define the alpha layer
+                    alphaChannel = uint8(255 * (distFromCenter / max(distFromCenter(:))));
+                    
+                end
+                
+                black = BlackIndex(obj.screenId);
+                
+                % Combine alpha gradient with RGB mask for off screen texture
+                maskMatrix = cat(3, black * ones(obj.viewportRect(4), obj.viewportRect(3), 3) * 255, alphaChannel);
+
+                % Create restricted FOV texture
+                obj.restrictedFOV = Screen('MakeTexture', obj.viewportPtr, maskMatrix);
+                
+                % Set the alpha channel
+                obj.restrictedChannel = alphaChannel;
+                
             end
 
         end
@@ -966,6 +1021,14 @@
        
             glPopMatrix();
             Screen('EndOpenGL', obj.viewportPtr);
+            
+            % Apply dynamic restricted FOV
+            if (obj.initFOV(1) ~= 0) && ~player.IsPlayerHesitating()
+
+                Screen('DrawTexture', obj.viewportPtr, obj.restrictedFOV);   
+                        
+            end
+             
             Screen('Flip', obj.viewportPtr);          
             
         end

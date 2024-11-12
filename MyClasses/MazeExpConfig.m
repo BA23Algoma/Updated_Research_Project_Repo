@@ -28,7 +28,8 @@ classdef MazeExpConfig
         singleMaze                    = 0;
         select                        = 0;
         gazePoint                     = 0;
-        ipAddress                     = '172.19.1.229';
+        ipAddress                     = '127.0.0.1';
+        dynamicFOV                    = 0;            
         
     end
     
@@ -61,6 +62,7 @@ classdef MazeExpConfig
             'singleMaze',...
             'gazePoint',...
             'ipAddress',...
+            'dynamicFOV',... 
             };
         
     end
@@ -97,7 +99,8 @@ classdef MazeExpConfig
                 fprintf(fid, '%f\t%s\n', obj.singleMaze, strcat('% singleMaze'));
                 fprintf(fid, '%f\t%s\n', obj.select, strcat('% singleMaze'));
                 fprintf(fid, '%f\t%s\n', obj.gazePoint, strcat('% gazePoint'));
-                printf(fid, '%f\t%s\n', obj.ipAddress, strcat('% ipAddress'));
+                fprintf(fid, '%s\t%s\n', obj.ipAddress, strcat('% ipAddress')); 
+                printf(fid, '%f\t%s\n', obj.dynamicFOV, strcat('% dynamicFOV')); 
 
             else
                 
@@ -115,9 +118,16 @@ classdef MazeExpConfig
                 
                 a = cell(numel(obj.fieldNames), 1);
                 for lineIndex = 1:numel(obj.fieldNames)
-                    
+                   
                    t = fgetl(fid);
-                   a{lineIndex} = sscanf(t, '%f');
+
+                   if startsWith(t, '''') % Check if the line contains letters
+                       t = strtok(t, '%'); % Remove comment
+                       t = strtrim(t); % Trim leading and trailing whitespaces
+                       a{lineIndex} = t(2:end-1); % Remove quotes
+                   else
+                       a{lineIndex} = sscanf(t, '%f');    
+                   end
                     
                 end
                 
