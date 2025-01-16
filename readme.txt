@@ -6,7 +6,16 @@ by Stéphane Rainville (stephane.rainville@vizirlabs.com)
 Matlab Source code for MazeExp.exe (X64)
 **********************************************************
 
-- Requirements to run source code in interpreted mode in Matlab:
+MazeExp is an interactive virtual reality program developed in MATLAB, utilizing OpenGL and PsychToolbox. Participants navigate mazes using keyboard controls to reach designated exits. This program is designed to measure participants ability to utilize visual cues in navigation. 
+
+- Features
+	- 20 customizable mazes, each containing a distal cue, (moon) and varying proximal cues. 
+	- Block sequencing to allow scheduled breaks for participants during experiment.
+	- GUI Interface for customizing experiments, refer to the GUI Breakdown text file for more details.
+	- Interfaces with Gazepoint eyetrack software for calibration and tracking user eye movements.
+ 	- Tracks and records participants navigation paths and eye movements.
+	
+- Requirements to run source code in interpreted mode in MATLAB:
 
 	- Install PsychToolbox
 	- Put 'MyClasses' in Matlab path

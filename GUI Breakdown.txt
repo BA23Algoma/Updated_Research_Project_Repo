@@ -9,6 +9,7 @@ Graphics — Presets based on the screen dimensions, frame rate, along with the 
 Avatar — Sets the in maze user speed, rotation speed (radial velocity), and body radius (used in calculating tripped wires, wall collisions, etc…)
 
 Input Device — Keyboard relates to arrow and enter button, addition button include
+Enter - Confirms selection
 S - used to skip maze, data is still recorded to data file
 Esc — exits the maze program
 C — Used with gazepoint to re-calibrate program. Only available during the break screens between mazes.
@@ -27,4 +28,6 @@ Cues — Two condition available, proximal and distal condition (D&P) and distal
 
 Time — Sets the time limits of both the learning maze and the performance trial. The polling interval sets the interval at which data is collected.
 
-GazePoint — Used to setup experiment for eye tracking. Both Gazepoint analysis and control must be actively running before starting experiment. The ip address is taken from Gazepoint control settings menu. 
+GazePoint — Used to setup experiment for eye tracking. Both Gazepoint analysis and control must be actively running before starting experiment. The ip address is taken from Gazepoint control settings menu.
+
+DynamicFOv - Dynamic Field Of View controls the viewable space while the user is in motion. The focused setting creates a scope like perspective, where only space within the circle is viewable. The gradient setting blurs the view towards the outer edge of the field of view.
