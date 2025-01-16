@@ -15,7 +15,6 @@
     %     p.frameRate                     = 60;
     %     p.perspectiveAngle             = 45;
      
-     
     
     %     p.eyeLevel                      = -0.55;
     %     p.coo rdPollInterval            = 0.1; 

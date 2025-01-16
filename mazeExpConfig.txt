@@ -4,8 +4,8 @@
 1		% tourHand (1 = LEFT HAND; 2 = RIGHT HAND)
 1		% inputDevice (1 = KEYBOARD; 2 = JOYSTICK)
 0.125000	% playerBodyRadius
-0.0300000	% playerDeltaUnitPerFrame
-1.2500000	% playerDeltaDegPerFrame
+0.0200000	% playerDeltaUnitPerFrame
+1.2200000	% playerDeltaDegPerFrame
 0.02000	% tourDeltaUnitPerFrame
 1.2200000	% tourDeltaDegPerFrame
 1		% viewPoint (1 = FIRST PERSON; 2 = THIRD PERSON)
