@@ -33,7 +33,7 @@ classdef GazePoint
                 obj.client = pnet('tcpconnect', obj.ipAddress, obj.portNum);
  
             end
-            
+
             obj.names = {
                     'XMin', 'XMax','YMin', 'YMax',...
                     'CueOneXMin', 'CueOneXMax'...
@@ -54,7 +54,7 @@ classdef GazePoint
                 obj.gazePointSTR.YMin   = 'Y1:';
                 obj.gazePointSTR.YMax   = 'Y2:';
                 obj.gazePointSTR.EyeLoc = 'LOC: ';
-            
+
         end
         
         function Calibrate(obj, render, inputDevice, initCalibration)
