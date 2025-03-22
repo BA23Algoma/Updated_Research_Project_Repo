@@ -267,9 +267,6 @@ classdef Schedule
             
             obj.nCols = numel(fieldnames(obj.COL));
             
-            disp("Obj trials .COL Fieldnames...");
-            disp(fieldnames(obj.COL));
-            
             obj.nTrials = obj.nBlocks * obj.nMazesPerBlock;
             
             obj.trials = zeros(obj.nTrials, obj.nCols);

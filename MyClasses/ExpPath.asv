@@ -6,7 +6,7 @@ classdef ExpPath
         tourPath        = 'Tours';
         texPath         = 'Textures';
         soundPath       = 'Sounds';
-        dataPath        = 'Data';
+        dataPath        = 'GazePoint User Data';
         gazePath        = 'GazePoint User Data';
         objectPath      = 'Objects';
         objTextPath     = 'Objects\OBJ Textures';

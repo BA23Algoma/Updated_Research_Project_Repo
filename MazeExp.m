@@ -24,14 +24,11 @@ function MazeExp
     %     p.praticePollTimeLimit          = 60;
     %     p.cue                           = 1; % Proximal
     %     p.gazePoint                     = 0;
- 
-    %add 2007 file to path`
-    setPath = what('MatlabWindowsFilesR2007a');
-    addpath(setPath.path);
-    addpath(pathdef);
-    
+
     Randomizer();
-      
+    
+    filePath = ExpPath();
+    
     mazeExpConfig = MazeExpConfig;
     p = mazeExpConfig.Read();
     p = MazeExpGUI(p);
@@ -48,7 +45,7 @@ function MazeExp
     p.checkCollisionFlag            = 1;
      
     % Path
-    p.dataPath                      = 'Data';
+    p.dataPath                      = filePath.dataPath;
     p.eolPracticeFlag               = 0;
     p.initialTourFlag               = 0;
     p.blockPracticeFlag             = 1;
@@ -197,7 +194,7 @@ function MazeExp
         maze = Maze(mazeFileName, p.checkCollisionFlag);
 
         % Load Peripheral cues 
-        render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
+        render = render.loadPerCue(filePath.objectPath, filePath.objTextPath, maze.perCue);
         
         ShowCursor;
         
@@ -237,7 +234,7 @@ function MazeExp
             maze = Maze(mazeFileName, p.checkCollisionFlag);
             
             % Load Peripheral cues 
-            render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
+            render = render.loadPerCue(filePath.objectPath, filePath.objTextPath, maze.perCue);
 
             standby.ShowStandby(render, inputDevice, ipClient, 'Hit ENTER when ready', 'Get Ready for Practice Tour');
             
@@ -273,7 +270,7 @@ function MazeExp
             mazeTour = MazeTour(maze.FilePrefix, tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
 
             % Load Peripheral cues 
-            render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
+            render = render.loadPerCue(filePath.objectPath, filePath.objTextPath, maze.perCue);
  
             standby.ShowStandby(render, inputDevice, ipClient, 'Hit ENTER when ready.','Get Ready For Maze Tour');
             
@@ -453,7 +450,7 @@ function MazeExp
                     end
 
                     % Load Peripheral cues 
-                    render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);
+                    render = render.loadPerCue(filePath.objectPath, filePath.objTextPath, maze.perCue);
                     
                     mazeTour = MazeTour(maze.FilePrefix, p.tourHand, maze.pathName, p.tourDeltaDegPerFrame, p.tourDeltaUnitPerFrame);
                     maze.Tour(mazeTour, render, player, inputDevice);
@@ -497,7 +494,7 @@ function MazeExp
                     end
 
                     % Load Peripheral cues 
-                    render = render.loadPerCue('Objects\OBJ Textures', maze.perCue);  
+                    render = render.loadPerCue(filePath.objectPath, filePath.objTextPath, maze.perCue);  
                     
                     % if expSchedule.nMazesPerBlock ~= 1
 

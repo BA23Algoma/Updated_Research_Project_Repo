@@ -208,7 +208,7 @@
             
             % Distal feature (moon)
             if obj.distalCueFlag
-                obj = obj.AddTextureDistalCue('moon.jpg',  obj.viewportPtr);
+                obj = obj.AddTextureDistalCue(fullfile(obj.texPath, 'moon.jpg'),  obj.viewportPtr);
             end
             
             % Build FOV restriction window
@@ -496,12 +496,12 @@
                         
         end
 
-        function obj = loadPerCue(obj, objTexPath, cueProperties)
+        function obj = loadPerCue(obj, objPath, objTexPath, cueProperties)
              % Periperhal Queue
             if obj.perCueFlag
                 % load object
-                obj.cueOneProperties = LoadOBJFileV2(cueProperties.obj);
-                obj.cueTwoProperties = LoadOBJFileV2(cueProperties.objTwo);
+                obj.cueOneProperties = LoadOBJFileV2(fullfile(objPath, cueProperties.obj));
+                obj.cueTwoProperties = LoadOBJFileV2(fullfile(objPath, cueProperties.objTwo));
                 
                 % Load object textures
                 obj = obj.AddTexturePerCue(GlTexture(objTexPath, cueProperties.tex), GlTexture(objTexPath, cueProperties.texTwo));
