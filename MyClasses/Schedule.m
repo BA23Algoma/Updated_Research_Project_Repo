@@ -267,6 +267,9 @@ classdef Schedule
             
             obj.nCols = numel(fieldnames(obj.COL));
             
+            disp("Obj trials .COL Fieldnames...");
+            disp(fieldnames(obj.COL));
+            
             obj.nTrials = obj.nBlocks * obj.nMazesPerBlock;
             
             obj.trials = zeros(obj.nTrials, obj.nCols);
@@ -404,7 +407,7 @@ classdef Schedule
         end
         
         
-        function SaveToFile(obj, p)
+        function SaveToFile(obj, p, varagin)
             
             if p.singleMaze
                 fileName = strcat('maze#', num2str(p.mazeRunFile), '.singleMazeRun', obj.dataFileNameSuffix);
@@ -439,7 +442,17 @@ classdef Schedule
                 
             else
                 
-                obj.PrintData(fid, p);
+                if nargin > 2
+                    mazeNum =  varagin;
+                    obj.PrintData(fid, p, mazeNum);
+
+                else
+
+                     obj.PrintData(fid, p);
+
+                end
+                
+               
                 fclose(fid);
                 
             end
@@ -453,9 +466,19 @@ classdef Schedule
             
         end
         
-        function PrintData(obj, fid, p)
+        function PrintData(obj, fid, p, varagin)
             
-            for trialIndex = 1:obj.nTrials
+            if nargin > 3
+                
+                printRange = varagin;
+                
+            else
+                
+                printRange = 1:obj.nTrials;
+                
+            end
+            
+            for trialIndex = printRange
                 
                 fprintf(fid, '%i\t%i\t%i\t%i\t%3.4f\t%i\t%i\t%i\t%i\t', obj.trials(trialIndex, :));
                 fprintf(fid, '%3.4f\t', p.playerDeltaUnitPerFrame);

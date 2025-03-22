@@ -30,4 +30,4 @@ Time — Sets the time limits of both the learning maze and the performance tria
 
 GazePoint — Used to setup experiment for eye tracking. Both Gazepoint analysis and control must be actively running before starting experiment. The ip address is taken from Gazepoint control settings menu.
 
-DynamicFOv - Dynamic Field Of View controls the viewable space while the user is in motion. The focused setting creates a scope like perspective, where only space within the circle is viewable. The gradient setting blurs the view towards the outer edge of the field of view.
+DynamicFOv - Dynamic Field Of View controls the viewable space while the user is in motion. The focused setting creates a scope like perspective, where only space within the circle is viewable. The gradient setting blurs the view towards the outer edge of the screen. These settings were added to minimize the feeling of disorientation and nausea among users, but has yet to be tested at scale to determine the effectiveness in reducing motion sickness.

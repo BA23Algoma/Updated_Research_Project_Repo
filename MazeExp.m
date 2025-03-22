@@ -1,4 +1,6 @@
-   function MazeExp                    
+
+
+function MazeExp                    
                                                                      
      %     %      GUI modifiable parameters                                  
     %     p .participantI d               = 0;      
@@ -590,6 +592,9 @@
                     WaitSecs(.25);        
                     rcjRating = rating.RatingSelect(render, inputDevice, 'RCJ');
                     expSchedule.trials(trialIndex, Schedule.COL.RCJ_RATING) = rcjRating;
+                    
+                    % Save data to user summary file
+                    expSchedule.SaveToFile(p, mazeNum);
 
                 end
                 
@@ -605,12 +610,6 @@
             end
 
         end
-    end
-    
-    if ~p.singleMaze
-        
-        expSchedule.SaveToFile(p);
-    
     end
           
     splashScreen.ShowSplashScreen(render, inputDevice, 'Debriefing.jpg', 'Textures');
